@@ -9,6 +9,8 @@ Kyle Adrian L. Santos & Jan Kailu Eli A. Baradas, DLSU ID# <12209546> <>
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h> // library where sleep() is in; sleep was used to delay the display output
 
 #define NUM_USERS 100
 typedef char string[40];
@@ -52,7 +54,7 @@ typedef struct transaction
 void menu();
 void rmNewLine(char str[]);
 void loadUsers(FILE *txt, User account[], int *nUsers);
-void loadItems(FILE *txt, User account[], int nUsers);
+void loadItems(FILE *txt, User account[], const int nUsers);
 void registerUser();
 
 
@@ -88,10 +90,12 @@ void SortByID(Item p[], int size)
 
 void sellMenu(User *acc, int *numProduct)
 {
-    FILE *txtItem; // FILE for appending
-    Item *thing;
-    int i;
-    int choice = 0;
+    FILE *txtItem = NULL; // FILE for appending
+    Item *thing = NULL;
+    int i, temp;
+    char t; // serves as a variable for user input
+    string buffer;
+    int choice = 0, selectProd = 0, found = 0;
 
     do
     {
@@ -115,8 +119,7 @@ void sellMenu(User *acc, int *numProduct)
             
             printf("\nEnter Product ID: ");
             scanf("%d", &thing->prodID);
-
-            scanf("%*c"); // catches and throws the new line
+            getchar();
 
             printf("What is the name of the product? ");
             fgets(thing->item_name, 22, stdin);
@@ -151,14 +154,77 @@ void sellMenu(User *acc, int *numProduct)
         
         // EDIT STOCK
         case 2:
+            // SORT AND DSIPLAY A TABLE
             SortByID(&acc->products[0], *numProduct);
-            printf("\nProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n\n");
-            
+            printf("\nProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n\n");       
             for (i = 0; i < *numProduct; i++)
             {
                 thing = &acc->products[i]; // stores the address of the struct Item of the user in access
                 printf("%10d\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", thing->prodID, thing->item_name, thing->category, thing->price, thing->quantity);
             }
+
+            // asks for product ID and checks if ID is valid
+            printf("What product do you wish to edit (ENTER PRODUCT ID)? ");
+            scanf("%d", &selectProd);
+            for (i = 0; i < *numProduct; i++)
+                if (selectProd == acc->products[i].prodID)
+                {
+                    found = 1;
+                    selectProd = i;
+                    i = *numProduct;
+                }
+
+            // if not found breaks form the EDIT STOCK switch case
+            if (!found) break;
+
+            do
+            {
+                printf("\n--EDIT STOCK--\n");
+                printf("\n[1] Replenish\n");
+                printf("[2] Change Price\n");
+                printf("[3] Change Item Name\n");
+                printf("[4] Change Category\n");
+                printf("[5] Change Description\n");
+                printf("[6] Finish Editing\n\n");
+
+                choice = 0;
+                scanf("%d", &choice);
+                getchar();
+
+                switch (choice)
+                {
+                    case 1: // REPLENISH
+                        printf("\nHow much stock will you add to the product? ");
+                        scanf("%d", &temp);
+                        acc->products[selectProd].quantity += temp;
+                        break;
+                    case 2: // CHANGE PRICE
+                        printf("\nHow much should be the new price of the product? ");
+                        scanf("%lf", &acc->products[selectProd].price);
+                        break;
+                    case 3: // CHANGE ITEM NAME
+                        printf("\nWhat should be the new name of the product? ");
+                        fgets(acc->products[selectProd].item_name, 22, stdin);
+                        rmNewLine(acc->products[selectProd].item_name);
+                        break;
+                    case 4: // CHANGE CATEGORY
+                        printf("\nWhat should be the new name of the product? ");
+                        fgets(acc->products[selectProd].category, 17, stdin);
+                        rmNewLine(acc->products[selectProd].category);
+                        break;
+                    case 5: // CHANGE DESCRIPTION
+                        printf("\nWhat should be the new description of the product? ");
+                        fgets(acc->products[selectProd].description, 32, stdin);
+                        rmNewLine(acc->products[selectProd].description);
+                        break;
+                    case 6:
+                        printf("\nExiting Edit Stock Menu\n");
+                        break;
+                    default:
+                        printf("\nPlease enter a valid input.\n");
+                }
+
+            } while (choice != 6);
 
             break;
         
@@ -166,11 +232,32 @@ void sellMenu(User *acc, int *numProduct)
         case 3:
             SortByID(&acc->products[0], *numProduct);
             printf("\nProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n\n");
-            
+
             for (i = 0; i < *numProduct; i++)
             {
                 thing = &acc->products[i]; // stores the address of the struct Item of the user in access
                 printf("%10d\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", thing->prodID, thing->item_name, thing->category, thing->price, thing->quantity);
+            }
+            break;
+        
+        // SHOW MY LOW STOCK PRODUCTS
+        case 4:
+            for (i = 0; i < *numProduct; i++)
+            {
+                thing = &acc->products[i]; // stores the address of the struct Item of the user in access
+                if (thing->quantity < 5)
+                {
+                    printf("\nProduct ID: %d\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
+                    
+                    if (i != *numProduct - 1)
+                    {
+                        printf("Type [N] to see next or [X] to exit viewing: ");
+                        scanf("%c", &t);
+                        getchar();
+                    }
+                }
+
+                if (t != 'N') i = *numProduct;
             }
             break;
     }
@@ -268,6 +355,8 @@ int main()
     FILE *regUser;
     FILE *usertxt = fopen("Users.txt", "r");
     FILE *itemtxt = fopen("Items.txt", "r");
+
+    system("clear");
     
     if (usertxt == NULL || itemtxt == NULL)
         return 1;
@@ -375,7 +464,7 @@ void loadUsers(FILE *txt, User account[], int *nUsers)
 }
 
 
-void loadItems(FILE *txt, User account[], int nUsers)
+void loadItems(FILE *txt, User account[], const int nUsers)
 {
     int i;
     int *nP; // pointer to the number of user's product
