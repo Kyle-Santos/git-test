@@ -1,5 +1,21 @@
 #include "Shopping-App.h"
 
+int searchSeller(User acc[], const int nUsers, int *id)
+{
+    int i, j;
+
+    for (i = 0; i <  nUsers; i++)
+        for (j = 0; j < acc[i].nProduct; j++)
+        {    
+            if (acc[i].products[j].prodID == *id)
+            {
+                *id = j;
+                return i;
+            }
+        }
+
+    return 0;
+}
 
 void SortByProdID(Item p[], int size)
 {
@@ -30,6 +46,31 @@ void SortByProdID(Item p[], int size)
     }
 }
 
+void SortUserBySellerID(User acc[], const int nUsers)
+{
+    int i, j;
+    int lowID, pos;
+    User temp;
+
+    for (i = 0; i < nUsers - 1; i++)
+    {
+        lowID = acc[i].userID;
+        pos = i;
+        for (j = i + 1; j < nUsers; j++)
+            if (lowID > acc[j].userID)
+            {    
+                pos = j;
+                lowID = acc[j].userID;
+            }
+        
+        if (pos != i)
+        {
+            temp = acc[i];
+            acc[i] = acc[pos];
+            acc[pos] = temp;
+        }
+    }
+}
 
 void showItemsInTable(Item p[], int n)
 {
@@ -39,35 +80,10 @@ void showItemsInTable(Item p[], int n)
         printf("%10d\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
 }
 
-
 void ViewProdBySellerID(User acc[], const int nUsers)
 {
-    int i, j;
-    int lowID, pos;
-    User temp;
+    int i;
     char t;
-
-    if (nUsers != 0)
-    {
-        for (i = 0; i < nUsers - 1; i++)
-        {
-            lowID = acc[i].userID;
-            pos = i;
-            for (j = i + 1; j < nUsers; j++)
-                if (lowID > acc[j].userID)
-                {    
-                    pos = j;
-                    lowID = acc[j].userID;
-                }
-            
-            if (pos != i)
-            {
-                temp = acc[i];
-                acc[i] = acc[pos];
-                acc[pos] = temp;
-            }
-        }
-    }
 
     for (i = 0; i < nUsers; i++)
         if (acc[i].nProduct != 0)
@@ -75,7 +91,7 @@ void ViewProdBySellerID(User acc[], const int nUsers)
             printf("\nSeller ID: %d\n", acc[i].userID);
             showItemsInTable(acc[i].products, acc[i].nProduct);
 
-            if (j != acc[i].nProduct - 1)
+            if (i != nUsers - 1)
             {
                 printf("Type [N] to see next or [X] to exit viewing: ");
                 scanf("%c", &t);
@@ -90,7 +106,6 @@ void ViewProdBySellerID(User acc[], const int nUsers)
 
 void sellMenu(User *acc, int *numProduct)
 {
-    FILE *txtItem = NULL; // FILE for appending
     Item *thing = NULL;
     int i, temp;
     char t; // serves as a variable for user input
@@ -153,17 +168,11 @@ void sellMenu(User *acc, int *numProduct)
 
                 thing->sellerID = acc->userID;
 
-                txtItem = fopen("Items.txt", "a");
-
-                fprintf(txtItem, "\n%d %d\n%s%s%s%d %.2lf\n", thing->prodID, thing->sellerID, thing->item_name, thing->category, thing->description, thing->quantity, thing->price);
-
                 rmNewLine(thing->item_name);
                 rmNewLine(thing->category);
                 rmNewLine(thing->description);
 
                 *numProduct += 1; // updates the number of different products sold by one person
-
-                fclose(txtItem);
 
                 break;
             
@@ -261,7 +270,7 @@ void sellMenu(User *acc, int *numProduct)
                         if (i != *numProduct - 1)
                         {
                             printf("Type [N] to see next or [X] to exit viewing: ");
-                            scanf("%c", &t);
+                            scanf(" %c", &t);
                             getchar();
                         }
                     }
@@ -284,10 +293,29 @@ void sellMenu(User *acc, int *numProduct)
 }
 
 
-void buyMenu(User acc[], const int nUsers)
+void buyMenu(User acc[], const int nUsers, int accInd)
 {
-    int i, choice = 0;
-    int id = 0;
+    int i, j, 
+        choice = 0, 
+        found = 0, 
+        id = 0,
+        id_prod = 0,
+        quantity = 0;
+    char t;
+    string category, bin;
+    Item *thing;
+    FILE *bag = NULL;
+    Item remove;
+    
+    sprintf(bin, "%d.bag", acc[accInd].userID);
+    bag = fopen(bin, "rb");
+
+    if (bag != NULL)
+    {
+        fread(&acc[accInd].inCart, sizeof(int), 1, bag);
+        fread(acc[accInd].cart, sizeof(Item), 1, bag);
+    }
+    fclose(bag);
 
     do
     {
@@ -307,6 +335,7 @@ void buyMenu(User acc[], const int nUsers)
         {
             // VIEW ALL PRODUCTS
             case 1:
+                SortUserBySellerID(acc, nUsers);
                 ViewProdBySellerID(acc, nUsers);
                 break;
 
@@ -328,7 +357,7 @@ void buyMenu(User acc[], const int nUsers)
 
                 if (i == nUsers)
                 {
-                    printf("\nSeller ID does not exist. You will be redirected back to the User Menu.\n");
+                    printf("\nSeller ID does not exist. You will be redirected back to the Buy Menu.\n");
                     sleep(1);
                 }
                     
@@ -336,14 +365,202 @@ void buyMenu(User acc[], const int nUsers)
             
             // SEARCH PRODUCTS BY CATEGORY
             case 3:
+                printf("\nWhat category of products do you wanna see? ");
+                scanf("%s", category);
 
+                for (i = 0; i < nUsers; i++)
+                {
+                    if (acc[i].nProduct != 0)
+                    {
+                        for (j = 0; j < acc[i].nProduct; j++)
+                            if (strcmp(category, acc[i].products[j].category) == 0)
+                            {
+                                found = 1;
+                                thing = &acc[i].products[j]; // stores the address of the struct Item of the user in access
+                                printf("\nProduct ID: %d\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
+                                
+                                if (j != acc[i].nProduct - 1)
+                                {
+                                    printf("Type [N] to see next or [X] to exit viewing: ");
+                                    scanf(" %c", &t);
+                                    getchar();
+                                }
+
+                                if (t != 'N') j = acc[i].nProduct;
+                            }
+                            
+                    }
+                }
+                    
+                if (!found)
+                {
+                    printf("\nCategory does not exist. You will be redirected back to the User Menu.\n");
+                    sleep(1);
+                }
+                break;
+
+            // SEARCH PRODUCTS BY NAME
+            case 4:
+
+                break;
+
+            // ADD TO CART
+            case 5:
+                if (acc[accInd].inCart == 10)
+                {
+                    printf("\nCart already has 10 items. Please check out or remove items.\n");
+                    sleep(1);
+                    break;
+                }
+
+                id_prod = 0;
+
+                do 
+                {
+                    printf("\nEnter the product ID of the item you wanna add to your cart: ");
+                    scanf("%d", &id_prod);
+                    getchar();
+                    
+                    found = searchSeller(acc, nUsers, &id_prod);
+                } while (!found);
+
+                printf("Enter the quantity you wanna buy: ");
+                scanf("%d", &quantity);
+                
+                if (quantity > acc[found].products[id_prod].quantity || quantity <= 0)
+                {
+                    printf("\nError: Quantity entered is invalid. Item wasn't added.\n");
+                    break;
+                }
+
+                acc[accInd].cart[acc[accInd].inCart] = acc[found].products[id_prod];
+                acc[accInd].cart[acc[accInd].inCart].quantity = quantity;
+                acc[accInd].inCart++;
+
+                break;
+
+            // EDIT CART
+            case 6:
+                choice = 0;
+
+                do
+                {
+                    showItemsInTable(acc[accInd].cart, acc[accInd].inCart);
+                    printf("\n%s\n", "===============================");
+                    printf("%s\n", "         Edit Your Cart");
+                    printf("%s\n", "===============================");
+                    printf("\n[1] Remove All Items From Seller\n");
+                    printf("[2] Remove Specific Item\n");
+                    printf("[3] Edit Quantity\n");
+                    printf("[4] Finish Edit Cart\n\n");
+                    scanf("%d", &choice);
+                    getchar();
+
+                    switch(choice)
+                    {
+                        // REMOVE ALL ITEMS
+                        case 1:
+                            for (i = 0; i < acc[accInd].inCart; i++)
+                                acc[accInd].cart[i] = remove;
+                            
+                            acc[accInd].inCart = 0;
+                            printf("\nItems in cart is successfully removed.\n");
+                            sleep(1);
+                            break;
+
+                        // REMOVE A SPEFICIC ITEM
+                        case 2:
+                            id_prod = 0;
+
+                            do
+                            {
+                                printf("\nEnter the product ID of the item you wanna remove from your cart: ");
+                                scanf("%d", &id_prod);
+                                getchar();
+                            } while (id_prod == 0);
+
+                            for (i = 0; i < acc[accInd].inCart; i++)
+                            {
+                                if (id_prod == acc[accInd].cart[i].prodID)
+                                {
+                                    acc[accInd].cart[i] = remove;
+                                    
+                                    for (j = i + 1; j < acc[accInd].inCart; j++, i++)
+                                        acc[accInd].cart[i] = acc[accInd].cart[j];
+
+                                    acc[accInd].inCart -= 1;
+                                    id_prod = 0;
+                                }
+                            }
+
+                            if (id_prod != 0)
+                                printf("Product ID does not exist.\n");
+                            else
+                                printf("Item has been successfully removed.\n");
+
+                            sleep(1);
+                            break;
+
+                        // EDIT QUANITY
+                        case 3:
+                            id_prod = 0, quantity = 0;
+
+                            do
+                            {
+                                printf("\nEnter the product ID of the item you wanna change the quantity from your cart: ");
+                                scanf("%d", &id_prod);
+                                getchar();
+                            } while (id_prod == 0);
+
+                            for (i = 0; i < acc[accInd].inCart; i++)
+                            {
+                                if (id_prod == acc[accInd].cart[i].prodID)
+                                {
+                                    printf("Enter the new quantity: ");
+                                    scanf("%d", &quantity);
+                                    
+                                    if (quantity > acc[accInd].products[i].quantity || quantity <= 0)
+                                        printf("\nError: Quantity entered is invalid. Quantity wasn't changed\n");
+                                    else    
+                                        acc[accInd].cart[i].quantity = quantity;
+
+                                    id_prod = 0;
+                                }
+                            }
+
+                            if (id_prod != 0)
+                                printf("Product ID does not exist.\n");
+                            else
+                                printf("Quantity has been successfully modified.\n");
+
+                            sleep(1);
+                            break;
+
+                        case 4:
+                            break;
+
+                        //default:
+                    
+                    }
+
+                } while (choice != 4);
+
+                break;
+
+            // CHECK OUT MENU
+            case 7:
+                break;
+
+            // EXIT BUY MENU
+            case 8:
+                printf("\nExiting Buy Menu...\n");
+                sleep(1);
                 break;
             
             default:
                 printf("\nEnter a valid input.\n");
-                break;
         }
-    } while (choice > 8 || choice < 1);
+    } while (choice != 8);
 }
 
 
@@ -353,7 +570,8 @@ void userMenu(User account[], int nUsers)
     int ID; 
     char pass[11];
     int choice = 0; // choice for seller menu
-    string name;
+    string name, binName; 
+    FILE *bin = NULL;
     int *numProduct; // temp pointer variable for accessing the number of product a user has
 
     // gets the ID and Password input 
@@ -395,13 +613,23 @@ void userMenu(User account[], int nUsers)
                         break;
                     
                     case 2: // buy menu
-                        buyMenu(account, nUsers);
+                        buyMenu(account, nUsers, i);
                         break;
                     case 3: // exit user menu
+                        if (account[i].inCart != 0)
+                        {
+                            printf("\nSaving user's unchecked out cart...\n");
+                            sleep(1);
+                            sprintf(binName, "%d.bag", account[i].userID);
+                            bin = fopen(binName, "wb");
+                            fwrite(&account[i].inCart, sizeof(int), 1, bin);
+                            fwrite(account[i].cart, sizeof(Item), 1, bin);
+                            fclose(bin);
+                        }
+
                         printf("\nSigning out user %s...\n\n", name);
                         on = 0;
                         i = nUsers + 1;
-                        sleep(1);
                         break;
 
                 }
