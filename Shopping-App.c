@@ -17,15 +17,15 @@ Kyle Adrian L. Santos & Jan Kailu Eli A. Baradas, DLSU ID# <12209546> <12206717>
 
 int main()
 {
-    int choice;
+    int i, j, choice;
+    Item temp;
     User account[NUM_USERS]; // declares an array of users with a max of 100 users
     int nUsers = 0; // this is to keep track of registered users
 
-    FILE *regUser;
     FILE *usertxt = fopen("Users.txt", "r");
     FILE *itemtxt = fopen("Items.txt", "r");
 
-    system("clear");
+    //system("clear");
     
     if (usertxt == NULL || itemtxt == NULL)
         return 1;
@@ -55,14 +55,8 @@ int main()
         switch(choice)
         {
             case 1:
-                regUser = fopen("Users.txt", "a");
-                if (regUser == NULL)
-                    return 1;
-
-                registerUser(regUser, account, &nUsers);
-                fclose(regUser);
-
-                printf("\n--Have successfully registered the user--\n");
+                registerUser(account, &nUsers);
+                printf("\n---Have successfully registered the user---\n");
                 sleep(1);
                 break;
             case 2:
@@ -72,20 +66,47 @@ int main()
                 adminMenu(account, nUsers);
                 break;
             case 4:
+                printf("\nSaving All Information...\n");
+                sleep(1);
+
+                usertxt = fopen("Users.txt", "w");
+                itemtxt = fopen("Items.txt", "w");
+                
+                for (i = 0; i < nUsers; i++)
+                    fprintf(usertxt, "%d %s\n%s\n%s\n%s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+
+                for (i = 0; i < nUsers; i++)
+                {
+                    for (j = 0; j < account[i].nProduct; j++)
+                    {
+                        temp = account[i].products[j];
+                        fprintf(itemtxt, "%d %d\n%s\n%s\n%s\n%d %.2lf\n\n", temp.prodID, temp.sellerID, temp.item_name, temp.category, temp.description, temp.quantity, temp.price);
+                        fflush(itemtxt);
+                    }
+                }
+                
+                fclose(usertxt);
+                fclose(itemtxt);
+                printf("\nData has been saved.\n");
+                sleep(1);
                 break;
             default:
                 printf("\nEnter Valid Input.\n");
         }
     } while (choice != 4);
     
-    printf("\nThank you for using Shapi!\n");
+    printf("\nThank you for using the app!\n");
+    sleep(1);
     return 0;
 }
 
 
 void menu()
 {
-    printf("\n--MAIN MENU--\n\n");
+    sleep(1);
+    printf("\n%s\n", "===============================");
+    printf("%s\n", "           MAIN MENU");
+    printf("%s\n\n", "===============================");
     printf("[1] Register a new user\n");
     printf("[2] User Menu\n");
     printf("[3] Admin Menu\n");
@@ -127,6 +148,7 @@ void loadUsers(FILE *txt, User account[], int *nUsers)
         // scanf("%d", &(account[nUsers].contact));
 
         account[*nUsers].nProduct = 0;
+        account[*nUsers].inCart = 0;
         *nUsers += 1;
     }
 }
@@ -174,7 +196,7 @@ void loadItems(FILE *txt, User account[], const int nUsers)
 }
 
 
-void registerUser(FILE *regUser, User account[], int *nUsers)
+void registerUser(User account[], int *nUsers)
 {
     int i;
 
@@ -208,8 +230,6 @@ void registerUser(FILE *regUser, User account[], int *nUsers)
     printf("Enter your 11-digit contact number: ");
     fgets(account[*nUsers].contact, 13, stdin);
 
-    fprintf(regUser, "\n%d %s%s%s%s\n", account[*nUsers].userID, account[*nUsers].pw, account[*nUsers].name, account[*nUsers].address, account[*nUsers].contact);
-
     rmNewLine(account[*nUsers].pw);
     rmNewLine(account[*nUsers].name);
     rmNewLine(account[*nUsers].address);
@@ -239,17 +259,27 @@ void adminMenu(User account[], int nUsers)
 
         switch(choice)
         {
-            //SHOW ALL USERS
+            // SHOW ALL USERS
             case 1:
+                system("clear");
                 printf("\n   User ID\t|\tPassword\t|\t      Name \t\t|\t\t  Address\t\t|\tContact No.\n\n");
                 for (i = 0; i < nUsers; i++)
                     printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
                 break;
 
+            // SHOW ALL SELLERS
+            case 2:
+                printf("\n   User ID\t|\tPassword\t|\t      Name \t\t|\t\t  Address\t\t|\tContact No.\n\n");
+                for (i = 0; i < nUsers; i++)
+                {
+                    if (account[i].nProduct != 0)
+                        printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+                }
+                break;
+
             // BACK TO MAIN MENU
             case 6:
                 printf("\nExiting back to Main Menu...\n");
-                sleep(1);
                 break;
 
             default:

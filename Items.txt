@@ -2,31 +2,31 @@
 Keyboard 360
 Accessory
 This keyboard turns 360 degrees
-3 16000
+3 16000.00
 
 10 123
 Iphone 360
 Accessory
 Part of the 360 series
-1 64000
+1 64000.00
 
 11 123
 Mouse 360
 Accessory
 Limited Edition 360 series
-1 9999
+1 9999.00
 
 1 123
 AirPods 360
 Accessory
 Limited Edition 360 series
-1 19999
+1 19999.00
 
 13 123
 T Shirt 360
 Clothes Men
 XL
-99 99
+99 99.00
 
 2 123
 Charger 360
@@ -45,3 +45,4 @@ Light Cable
 Accessory
 Charger
 9 999.00
+
