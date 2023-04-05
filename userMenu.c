@@ -1,15 +1,25 @@
 #include "Shopping-App.h"
 
-int searchSeller(User acc[], const int nUsers, int *id)
+
+// return 0 if string length is below or equal to max, 1 if not
+int isLenCorrect(string str, int len)
+{
+    if (strlen(str) > len)
+        return 1;
+        
+    return 0;
+}
+
+int searchSeller(User acc[], const int nUsers, string id, int *prod_index)
 {
     int i, j;
 
     for (i = 0; i <  nUsers; i++)
         for (j = 0; j < acc[i].nProduct; j++)
         {    
-            if (acc[i].products[j].prodID == *id)
+            if (strcmp(acc[i].products[j].prodID, id) == 0)
             {
-                *id = j;
+                *prod_index = j;
                 return i;
             }
         }
@@ -19,21 +29,22 @@ int searchSeller(User acc[], const int nUsers, int *id)
 
 void SortByProdID(Item p[], int size)
 {
-    int i, j;
-    int lowID, pos;
+    int i, j; // variables for looping
+    string lowID;
+    int pos;
     Item temp;
 
     if (size != 0)
     {
         for (i = 0; i < size - 1; i++)
         {
-            lowID = p[i].prodID;
+            strcmp(lowID, p[i].prodID);
             pos = i;
             for (j = i + 1; j < size; j++)
-                if (lowID > p[j].prodID)
+                if (strcmp(lowID, p[j].prodID) > 0)
                 {    
                     pos = j;
-                    lowID = p[j].prodID;
+                    strcmp(lowID, p[j].prodID);
                 }
             
             if (pos != i)
@@ -48,21 +59,22 @@ void SortByProdID(Item p[], int size)
 
 void SortCartBySellerID(Item p[], int size)
 {
-    int i, j;
-    int lowID, pos;
+    int i, j; // variables for looping
+    string lowID;
+    int pos;
     Item temp;
 
     if (size != 0)
     {
         for (i = 0; i < size - 1; i++)
         {
-            lowID = p[i].sellerID;
+            strcpy(lowID, p[i].sellerID);
             pos = i;
             for (j = i + 1; j < size; j++)
-                if (lowID > p[j].sellerID)
+                if (strcmp(lowID, p[j].sellerID) > 0)
                 {    
                     pos = j;
-                    lowID = p[j].sellerID;
+                    strcpy(lowID, p[j].sellerID);
                 }
             
             if (pos != i)
@@ -77,19 +89,20 @@ void SortCartBySellerID(Item p[], int size)
 
 int SortUserBySellerID(User acc[], const int nUsers, int logged)
 {
-    int i, j;
-    int lowID, pos;
+    int i, j; // variables for looping
+    string lowID;
+    int pos;
     User temp;
 
     for (i = 0; i < nUsers - 1; i++)
     {
-        lowID = acc[i].userID;
+        strcpy(lowID, acc[i].userID);
         pos = i;
         for (j = i + 1; j < nUsers; j++)
-            if (lowID > acc[j].userID)
+            if (strcmp(lowID, acc[j].userID) > 0)
             {    
                 pos = j;
-                lowID = acc[j].userID;
+                strcpy(lowID, acc[j].userID);
             }
         
         if (pos != i)
@@ -106,12 +119,12 @@ int SortUserBySellerID(User acc[], const int nUsers, int logged)
     return logged;
 }
 
-int findUser(User acc[], const int n, int id)
+int findUser(User acc[], const int n, string id)
 {
     int i;
 
     for (i = 0; i < n; i++)
-        if (id == acc[i].userID)
+        if (strcmp(id, acc[i].userID) == 0)
             return i;
 
     return -1;
@@ -122,7 +135,7 @@ void showItemsInTable(Item p[], int n)
     int i;
     printf("\nProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n\n");
     for (i = 0; i < n; i++)
-        printf("%10d\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
+        printf("%10s\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
 }
 
 void ViewProdBySellerID(User acc[], const int nUsers)
@@ -133,7 +146,7 @@ void ViewProdBySellerID(User acc[], const int nUsers)
     for (i = 0; i < nUsers; i++)
         if (acc[i].nProduct != 0)
         {
-            printf("\nSeller ID: %d\n", acc[i].userID);
+            printf("\nSeller ID: %s\n", acc[i].userID);
             showItemsInTable(acc[i].products, acc[i].nProduct);
 
             if (i != nUsers - 1)
@@ -154,7 +167,8 @@ void sellMenu(User *acc, int *numProduct)
     Item *thing = NULL;
     int i, temp;
     char t; // serves as a variable for user input
-    int choice = 0, selectProd = 0, found = 0;
+    int choice = 0, prod = 0, found = 0;
+    string selectProd;
 
     do
     {
@@ -183,18 +197,22 @@ void sellMenu(User *acc, int *numProduct)
 
                 do
                 {
-                    printf("\nEnter a unique Product ID: ");
-                    scanf("%d", &thing->prodID);
-                    getchar();
+                    do
+                    {
+                        printf("\nEnter a unique Product ID (MAX 8): ");
+                        scanf("%s", thing->prodID);
+                    } while (isNumeric(thing->prodID) == 1 || isLenCorrect(thing->prodID, ANY_ID_LEN) == 1);
 
                     for (i = 0; i < acc->nProduct; i++)
-                        if (acc->products[i].prodID == thing->prodID)
+                        if (strcmp(acc->products[i].prodID, thing->prodID) == 0)
                             i = *numProduct + 1;
 
                     if (i != *numProduct)
                         printf("\nProduct ID already exists. Please enter another.\n");
 
                 } while (i != *numProduct);
+
+                getchar();
 
                 printf("What is the name of the product? ");
                 fgets(thing->item_name, 22, stdin);
@@ -211,7 +229,7 @@ void sellMenu(User *acc, int *numProduct)
                 printf("Price of the product: ");
                 scanf("%lf", &thing->price);
 
-                thing->sellerID = acc->userID;
+                strcpy(thing->sellerID, acc->userID);
 
                 rmNewLine(thing->item_name);
                 rmNewLine(thing->category);
@@ -224,17 +242,17 @@ void sellMenu(User *acc, int *numProduct)
             // EDIT STOCK
             case 2:
                 // SORT AND DSIPLAY A TABLE
-                SortByProdID(&acc->products[0], *numProduct);
+                SortByProdID(acc->products, *numProduct);
                 showItemsInTable(acc->products, acc->nProduct);
 
                 // asks for product ID and checks if ID is valid
                 printf("\nWhat product do you wish to edit (ENTER PRODUCT ID)? ");
-                scanf("%d", &selectProd);
+                scanf("%s", selectProd);
                 for (i = 0; i < *numProduct; i++)
-                    if (selectProd == acc->products[i].prodID)
+                    if (strcmp(selectProd, acc->products[i].prodID) == 0)
                     {
                         found = 1;
-                        selectProd = i;
+                        prod = i;
                         i = *numProduct;
                     }
 
@@ -265,26 +283,26 @@ void sellMenu(User *acc, int *numProduct)
                         case 1: // REPLENISH
                             printf("\nHow much stock will you add to the product? ");
                             scanf("%d", &temp);
-                            acc->products[selectProd].quantity += temp;
+                            acc->products[prod].quantity += temp;
                             break;
                         case 2: // CHANGE PRICE
                             printf("\nHow much should be the new price of the product? ");
-                            scanf("%lf", &acc->products[selectProd].price);
+                            scanf("%lf", &acc->products[prod].price);
                             break;
                         case 3: // CHANGE ITEM NAME
                             printf("\nWhat should be the new name of the product? ");
-                            fgets(acc->products[selectProd].item_name, 22, stdin);
-                            rmNewLine(acc->products[selectProd].item_name);
+                            fgets(acc->products[prod].item_name, 22, stdin);
+                            rmNewLine(acc->products[prod].item_name);
                             break;
                         case 4: // CHANGE CATEGORY
                             printf("\nWhat should be the new name of the product? ");
-                            fgets(acc->products[selectProd].category, 17, stdin);
-                            rmNewLine(acc->products[selectProd].category);
+                            fgets(acc->products[prod].category, 17, stdin);
+                            rmNewLine(acc->products[prod].category);
                             break;
                         case 5: // CHANGE DESCRIPTION
                             printf("\nWhat should be the new description of the product? ");
-                            fgets(acc->products[selectProd].description, 32, stdin);
-                            rmNewLine(acc->products[selectProd].description);
+                            fgets(acc->products[prod].description, 32, stdin);
+                            rmNewLine(acc->products[prod].description);
                             break;
                         case 6:
                             printf("\nExiting Edit Stock Menu\n");
@@ -299,7 +317,7 @@ void sellMenu(User *acc, int *numProduct)
             
             // SHOW MY PRODUCTS
             case 3:
-                SortByProdID(&acc->products[0], *numProduct);
+                SortByProdID(acc->products, *numProduct);
                 showItemsInTable(acc->products, acc->nProduct);
                 break;
             
@@ -310,7 +328,7 @@ void sellMenu(User *acc, int *numProduct)
                     thing = &acc->products[i]; // stores the address of the struct Item of the user in access
                     if (thing->quantity < 5)
                     {
-                        printf("\nProduct ID: %d\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
+                        printf("\nProduct ID: %s\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
                         
                         if (i != *numProduct - 1)
                         {
@@ -353,24 +371,23 @@ void getDate(int *m, int *d, int *y)
 }
 
 
-void buyMenu(User acc[], const int nUsers, int accInd)
+int buyMenu(User acc[], const int nUsers, int accInd)
 {
     int i, j, k,// counter
         choice = 0, 
         found = 0, 
-        id = 0,
         id_prod = 0,
         quantity = 0,
         available = 0,
         month, day, year;
     char t;
     double total_amount = 0;
-    string category, bin;
+    string category, bin, id;
     Item *thing;
     FILE *bag = NULL;
     Item remove;
     
-    sprintf(bin, "%d.bag", acc[accInd].userID);
+    sprintf(bin, "%s.bag", acc[accInd].userID);
     bag = fopen(bin, "rb");
 
     if (bag != NULL)
@@ -405,11 +422,11 @@ void buyMenu(User acc[], const int nUsers, int accInd)
             // SHOW ALL PRODUCTS BY A SPECIFIC SELLER
             case 2:
                 printf("\nEnter the seller ID of the seller: ");
-                scanf("%d", &id);
+                scanf("%s", id);
                 getchar();
 
                 for (i = 0; i < nUsers; i++)
-                    if (acc[i].userID == id)
+                    if (strcmp(acc[i].userID, id) == 0)
                     {
                         if (acc[i].nProduct != 0)
                             showItemsInTable(acc[i].products, acc[i].nProduct);
@@ -440,7 +457,7 @@ void buyMenu(User acc[], const int nUsers, int accInd)
                             {
                                 found = 1;
                                 thing = &acc[i].products[j]; // stores the address of the struct Item of the user in access
-                                printf("\nProduct ID: %d\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
+                                printf("\nProduct ID: %s\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
                                 
                                 if (j != acc[i].nProduct - 1)
                                 {
@@ -481,10 +498,10 @@ void buyMenu(User acc[], const int nUsers, int accInd)
                 do 
                 {
                     printf("\nEnter the product ID of the item you wanna add to your cart: ");
-                    scanf("%d", &id_prod);
+                    scanf("%s", id);
                     getchar();
                     
-                    found = searchSeller(acc, nUsers, &id_prod);
+                    found = searchSeller(acc, nUsers, id, &id_prod);
                 } while (!found);
 
                 printf("Enter the quantity you wanna buy: ");
@@ -534,16 +551,12 @@ void buyMenu(User acc[], const int nUsers, int accInd)
                         case 2:
                             id_prod = 0;
 
-                            do
-                            {
-                                printf("\nEnter the product ID of the item you wanna remove from your cart: ");
-                                scanf("%d", &id_prod);
-                                getchar();
-                            } while (id_prod == 0);
+                            printf("\nEnter the product ID of the item you wanna remove from your cart: ");
+                            scanf("%s", id);
 
                             for (i = 0; i < acc[accInd].inCart; i++)
                             {
-                                if (id_prod == acc[accInd].cart[i].prodID)
+                                if (strcmp(id, acc[accInd].cart[i].prodID) == 0)
                                 {
                                     acc[accInd].cart[i] = remove;
                                     
@@ -551,11 +564,11 @@ void buyMenu(User acc[], const int nUsers, int accInd)
                                         acc[accInd].cart[i] = acc[accInd].cart[j];
 
                                     acc[accInd].inCart -= 1;
-                                    id_prod = 0;
+                                    id_prod = 1;
                                 }
                             }
 
-                            if (id_prod != 0)
+                            if (id_prod != 1)
                                 printf("Product ID does not exist.\n");
                             else
                                 printf("Item has been successfully removed.\n");
@@ -567,28 +580,24 @@ void buyMenu(User acc[], const int nUsers, int accInd)
                         case 3:
                             id_prod = 0, quantity = 0;
 
-                            do
-                            {
-                                printf("\nEnter the product ID of the item you wanna change the quantity from your cart: ");
-                                scanf("%d", &id_prod);
-                                getchar();
-                            } while (id_prod == 0);
+                            printf("\nEnter the product ID of the item you wanna change the quantity from your cart: ");
+                            scanf("%s", id);
 
                             for (i = 0; i < acc[accInd].inCart; i++)
                             {
-                                if (id_prod == acc[accInd].cart[i].prodID)
+                                if (strcmp(id, acc[accInd].cart[i].prodID) == 0)
                                 {
                                     printf("Enter the new quantity: ");
                                     scanf("%d", &quantity);
                                     
                                     for (j = 0; j < nUsers; j++)
-                                        if (acc[accInd].cart[i].sellerID == acc[j].userID)
+                                        if (strcmp(acc[accInd].cart[i].sellerID, acc[j].userID) == 0)
                                         {
                                             if (quantity > acc[accInd].products[j].quantity || quantity <= 0)
                                                 id_prod = -1;
                                             else   
                                             {
-                                                id_prod = 0; 
+                                                id_prod = 1; 
                                                 acc[accInd].cart[i].quantity = quantity;
                                             }
                                         }
@@ -597,7 +606,7 @@ void buyMenu(User acc[], const int nUsers, int accInd)
 
                             if (id_prod == -1)
                                 printf("\nError: Quantity entered is invalid. Quantity wasn't changed\n");
-                            else if (id_prod == 0)
+                            else if (id_prod == 1)
                                 printf("Quantity has been successfully modified.\n");
                             else
                                 printf("\nError: Product ID does not exist.\n");
@@ -623,14 +632,15 @@ void buyMenu(User acc[], const int nUsers, int accInd)
             // CHECK OUT MENU
             case 7:
                 choice = 0;
+                strcpy(id, " ");
 
                 // check if cart of any product quantity is more than the stocks of the seller
                 for (i = 0; i < acc[accInd].inCart; i++)
                 {
                     for (j = 0; j < nUsers; j++)
-                        if (acc[accInd].cart[i].sellerID == acc[j].userID)
+                        if (strcmp(acc[accInd].cart[i].sellerID, acc[j].userID) == 0)
                             for (k = 0; k < acc[j].nProduct; k++)
-                                if (acc[j].products[k].prodID == acc[accInd].cart[i].prodID)
+                                if (strcmp(acc[j].products[k].prodID, acc[accInd].cart[i].prodID) == 0)
                                 {
                                     if (acc[j].products[k].quantity < acc[accInd].cart[i].quantity)
                                     {
@@ -670,33 +680,32 @@ void buyMenu(User acc[], const int nUsers, int accInd)
 
                                 for (i = 0; i < acc[accInd].inCart; i++)
                                 {   
-                                    if (id != acc[accInd].cart[i].sellerID)
+                                    if (strcmp(id, acc[accInd].cart[i].sellerID) != 0)
                                     {
-                                        id = acc[accInd].cart[i].sellerID;
+                                        strcpy(id, acc[accInd].cart[i].sellerID);
 
                                         for (j = 0; j < acc[accInd].inCart; j++)
                                         {
                                             thing = &acc[accInd].cart[j];
-                                            if (thing->sellerID == id)
+                                            if (strcmp(thing->sellerID, id) == 0)
                                             {
-                                                printf("%8d \t%10d\t\t%8s\t\t%10.2lf\t\t%3.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
+                                                printf("%8d \t%10s\t\t%8s\t\t%10.2lf\t\t%3.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
                                                 total_amount += (thing->price * thing->quantity);
                                             }
                                         }
 
                                         // fix the bug where users are able to buy from themselves. fix the data type of numerics
-                                        found = findUser(acc, nUsers,id);
+                                        found = findUser(acc, nUsers, id);
                                         printf("\nTotal amount due: %lf\n", total_amount);
-                                        printf("\nSeller ID: %d\tSeller Name: %s\n", acc[found].userID, acc[found].name);
+                                        printf("\nSeller ID: %s\tSeller Name: %s\n", acc[found].userID, acc[found].name);
                                     }
                                 }
                                 break;
 
                             case 2:
-                                id = 0;
                                 showItemsInTable(acc[accInd].cart, acc[accInd].inCart);
                                 printf("Input the seller ID of the seller: ");
-                                scanf("%d", &id);
+                                scanf("%s", id);
 
                                 printf("\nQuantity\t|\tProduct ID\t|\tItem Name\t|\tUnit Price\t|\tTotal\n\n");
 
@@ -704,7 +713,7 @@ void buyMenu(User acc[], const int nUsers, int accInd)
                                 {
                                     thing = &acc[accInd].cart[i];
                                     if (thing->sellerID == id)
-                                        printf("%8d\t\t%10d\t\t%8s\t\t%10.2lf\t\t%5.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
+                                        printf("%8d\t\t%10s\t\t%8s\t\t%10.2lf\t\t%5.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
                                 }
                                 break;
                             
@@ -737,29 +746,28 @@ void buyMenu(User acc[], const int nUsers, int accInd)
                 printf("\nEnter a valid input.\n");
         }
     } while (choice != 8);
+
+    return accInd;
 }
 
 
 void userMenu(User account[], int nUsers)
 {
     int i, on = 1; // ctr
-    int ID; 
-    char pass[11];
     int choice = 0; // choice for seller menu
-    string name, binName; 
+    string name, binName, ID, pass; 
     FILE *bin = NULL;
-    int *numProduct; // temp pointer variable for accessing the number of product a user has
 
     // gets the ID and Password input 
     printf("\nEnter your user ID: ");
-    scanf("%d", &ID);   
+    scanf("%s", ID);   
     printf("Enter your password: ");
     scanf("%s", pass);
 
     for (i = 0; i < nUsers; i++)
     {
         // if the ID and Password match, logs in the existing user
-        if (ID == account[i].userID && strcmp(pass, account[i].pw) == 0)
+        if (strcmp(ID, account[i].userID) == 0 && strcmp(pass, account[i].pw) == 0)
         {
             printf("\nHi %s! You are now logged in.\n", account[i].name);
             strcpy(name, account[i].name);
@@ -787,20 +795,19 @@ void userMenu(User account[], int nUsers)
                 switch(choice)
                 {
                     case 1: // SELL MENU
-                        numProduct = &account[i].nProduct;
-                        sellMenu(&account[i], numProduct);
+                        sellMenu(&account[i], &account[i].nProduct);
                         break;
                     
-                    case 2: // buy menu
+                    case 2: // BUY MENU
                         // pass transactions
-                        buyMenu(account, nUsers, i);
+                        i = buyMenu(account, nUsers, i);
                         break;
                     case 3: // exit user menu
                         if (account[i].inCart != 0)
                         {
                             printf("\nSaving user's unchecked out cart...\n");
                             sleep(1);
-                            sprintf(binName, "%d.bag", account[i].userID);
+                            sprintf(binName, "%s.bag", account[i].userID);
                             bin = fopen(binName, "wb");
                             fwrite(&account[i].inCart, sizeof(int), 1, bin);
                             fwrite(account[i].cart, sizeof(Item), account[i].inCart, bin);

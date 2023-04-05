@@ -2,31 +2,36 @@
     Header file for Shopping-App.c
 */
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_USERS 100
 #define MAX_TRANSACTIONS 1000
+#define NAME_LEN 20
+#define ANY_ID_LEN 8
+#define PW_LEN 10
+#define DESCRIPTION_LEN 30
 typedef char string[40];
 
 
 typedef struct item
 {
-    int prodID;
-    char item_name[22];
-    char category[17];
-    char description[32];
+    string prodID; // prodID should have a maximum of 8 in length
+    string item_name; // item_name should have a maximum of 20 in length
+    string category; // category should have a maximum of 15 in length
+    string description; // description should have a maximum of 30 in length
     int quantity;
     double price;
-    unsigned int sellerID;
+    string sellerID; // User ID should have a maximum of 8 in length
 } Item;
 
 
 typedef struct user
 {
-    unsigned int userID;
-    char pw[12];
-    char address[32];
-    unsigned long long contact;
-    char name[22];
+    string userID; // User ID should have a maximum of 8 in length
+    string pw; // pw should have a max of 10 in length
+    string address; // address should have a maximum of 30 in length
+    string contact; // should have a max of 20 in length
+    string name; // name should have a maximum of 20 in length
 
     // products in the cart of user
     Item cart[10]; // could have different quantity per item
@@ -55,7 +60,9 @@ void printWelcome();
 
 void menu();
 
-void rmNewLine(char str[]);
+void rmNewLine(string str);
+
+int isNumeric(string str);
 
 void loadUsers(FILE *txt, User account[], int *nUsers);
 
@@ -65,7 +72,9 @@ void registerUser(User account[], int *nUsers);
 
 
 // USER MENU FUNCTIONS
-int searchSeller(User acc[], const int nUsers, int *id);
+int isLenCorrect(string str, int len);
+
+int searchSeller(User acc[], const int nUsers, string id, int *prod_index);
 
 void SortByProdID(Item p[], int size);
 
@@ -77,7 +86,7 @@ void ViewProdBySellerID(User acc[], const int nUsers);
 
 void sellMenu(User *acc, int *numProduct);
 
-void buyMenu(User acc[], const int nUsers, int accInd);
+int buyMenu(User acc[], const int nUsers, int accInd);
 
 void userMenu(User account[], int nUsers);
 

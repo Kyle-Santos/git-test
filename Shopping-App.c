@@ -8,7 +8,8 @@ Kyle Adrian L. Santos & Jan Kailu Eli A. Baradas, DLSU ID# <12209546> <12206717>
 *********************************************************************************************************/
 
 #include <stdio.h>
-#include <string.h>
+
+// libraries for aesthetics :))
 #include <stdlib.h> // used solely for system("clear"), to clear the terminal when program is ran
 #include <unistd.h> // library where sleep() is in; sleep was used to delay the display output
 
@@ -73,14 +74,14 @@ int main()
                 itemtxt = fopen("Items.txt", "w");
                 
                 for (i = 0; i < nUsers; i++)
-                    fprintf(usertxt, "%d %s\n%s\n%s\n%llu\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+                    fprintf(usertxt, "%s %s\n%s\n%s\n%s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
 
                 for (i = 0; i < nUsers; i++)
                 {
                     for (j = 0; j < account[i].nProduct; j++)
                     {
                         temp = account[i].products[j];
-                        fprintf(itemtxt, "%d %d\n%s\n%s\n%s\n%d %.2lf\n\n", temp.prodID, temp.sellerID, temp.item_name, temp.category, temp.description, temp.quantity, temp.price);
+                        fprintf(itemtxt, "%s %s\n%s\n%s\n%s\n%d %.2lf\n\n", temp.prodID, temp.sellerID, temp.item_name, temp.category, temp.description, temp.quantity, temp.price);
                         fflush(itemtxt);
                     }
                 }
@@ -127,7 +128,7 @@ void menu()
 }
 
 
-void rmNewLine(char str[])
+void rmNewLine(string str)
 {
     int i = 0;
     while (str[i] != 0)
@@ -141,7 +142,7 @@ void rmNewLine(char str[])
 
 void loadUsers(FILE *txt, User account[], int *nUsers)
 {
-    while (fscanf(txt, "%d", &(account[*nUsers].userID)) == 1)
+    while (fscanf(txt, "%s", account[*nUsers].userID) == 1)
     {
         fgetc(txt);
 
@@ -154,8 +155,7 @@ void loadUsers(FILE *txt, User account[], int *nUsers)
         fgets(account[*nUsers].address, 32, txt);
         rmNewLine(account[*nUsers].address);
 
-        fscanf(txt, "%llu", &(account[*nUsers].contact));
-        //scanf("%d", &(account[*nUsers].contact));
+        fscanf(txt, "%s", account[*nUsers].contact);
 
         account[*nUsers].nProduct = 0;
         account[*nUsers].inCart = 0;
@@ -169,20 +169,19 @@ void loadItems(FILE *txt, User account[], const int nUsers)
     int i;
     int *nP; // pointer to the number of user's product
     Item *prod;
-    unsigned int pID, sID; // product id & seller id
+    string pID, sID; // product id & seller id
 
-    while (fscanf(txt, "%d %d", &pID, &sID) == 2)
+    while (fscanf(txt, "%s %s", pID, sID) == 2)
     {
-
         for (i = 0; i < nUsers; i++)
         {
-            if (sID == account[i].userID)
+            if (strcmp(sID, account[i].userID) == 0)
             {
                 nP = &account[i].nProduct;
                 prod = &account[i].products[*nP];
                 
-                prod->prodID = pID;
-                prod->sellerID = sID;
+                strcpy(prod->prodID, pID);
+                strcpy(prod->sellerID, sID);
                 
                 fgetc(txt);
 
@@ -206,18 +205,39 @@ void loadItems(FILE *txt, User account[], const int nUsers)
 }
 
 
+int isNumeric(string str)
+{
+    int i = 0;
+
+    // if empty return 0
+    if (str[i] == '0')
+        return 1;
+
+    while (str[i])
+    {
+        if (str[i] < '0' || str[i] > '9')
+            return 1;
+        i++;
+    }
+
+    return 0;
+}
+
+
 void registerUser(User account[], int *nUsers)
 {
     int i;
 
     do
     {
-        printf("\nEnter a unique user ID: ");
-        scanf("%d", &(account[*nUsers].userID));
-        getchar();
+        do 
+        {
+            printf("\nEnter a unique user ID: ");
+            scanf("%s", account[*nUsers].userID);
+        } while (isNumeric(account[*nUsers].userID) == 1 || isLenCorrect(account[*nUsers].userID, ANY_ID_LEN) == 1);
 
         for (i = 0; i < *nUsers; i++)
-            if (account[i].userID == account[*nUsers].userID)
+            if (strcmp(account[i].userID, account[*nUsers].userID) == 0)
                 i = *nUsers + 1;
 
         if (i != *nUsers)
@@ -225,7 +245,7 @@ void registerUser(User account[], int *nUsers)
 
     } while (i != *nUsers);
 
-    printf("\nYour user ID is now (%d)\n\n", account[*nUsers].userID);
+    printf("\nYour user ID is now (%s)\n\n", account[*nUsers].userID);
     scanf("%*c");
 
     printf("Enter a unique password for your account (not exceeding 10 characters): ");
@@ -238,7 +258,7 @@ void registerUser(User account[], int *nUsers)
     fgets(account[*nUsers].address, 32, stdin);
 
     printf("Enter your 11-digit contact number: ");
-    scanf("%llu", &account[*nUsers].contact);
+    scanf("%s", account[*nUsers].contact);
 
     rmNewLine(account[*nUsers].pw);
     rmNewLine(account[*nUsers].name);
@@ -275,7 +295,7 @@ void adminMenu(User account[], int nUsers)
                 system("clear");
                 printf("\n   User ID\t|\tPassword\t|\t      Name \t\t|\t\t  Address\t\t|\tContact No.\n\n");
                 for (i = 0; i < nUsers; i++)
-                    printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11llu\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+                    printf("%10s\t\t%8s\t\t%18s\t\t%26s\t\t%11s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
                 break;
 
             // SHOW ALL SELLERS
@@ -284,7 +304,7 @@ void adminMenu(User account[], int nUsers)
                 for (i = 0; i < nUsers; i++)
                 {
                     if (account[i].nProduct != 0)
-                        printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11llu\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+                        printf("%10s\t\t%8s\t\t%18s\t\t%26s\t\t%11s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
                 }
                 break;
 
