@@ -1,3 +1,28 @@
+12345678 akosikylee
+Kyle Adrian Santos
+Taft, Malate, Metro Manila
+9283366175
+
+123 kailu
+Kailu Baradas
+Vista, Taft, Metro Manila
+675433
+
+145 hitest
+test guest
+United States
+32642
+
+111 mall
+Henry Sy
+CADS
+54321
+
+12 asd
+Jeck Sanchez
+makati
+6237123
+
 1 animo
 kyle san
 manila
@@ -11,12 +36,7 @@ bgc
 7 hat
 mad hatter
 borderland
-874232
-
-12 asd
-Jeck Sanchez
-makati
-6237123
+0874232
 
 14 prog2
 CC PROG
@@ -27,24 +47,4 @@ Gokongwei building
 String Array
 velasco
 306
-
-111 mall
-Henry Sy
-CADS
-54321
-
-123 kailu
-Kailu Baradas
-Vista, Taft, Metro Manila
-675433
-
-145 hitest
-test guest
-United States
-32642
-
-12345678 akosikylee
-Kyle Adrian Santos
-Taft, Malate, Metro Manila
-9283366175
 
