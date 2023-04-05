@@ -14,19 +14,21 @@ Kyle Adrian L. Santos & Jan Kailu Eli A. Baradas, DLSU ID# <12209546> <12206717>
 
 #include "userMenu.c"
 
-
 int main()
 {
     int i, j, choice;
     Item temp;
-    User account[NUM_USERS]; // declares an array of users with a max of 100 users
+    User account[MAX_USERS]; // declares an array of users with a max of 100 users
+    Transaction checkout[MAX_TRANSACTIONS];
     int nUsers = 0; // this is to keep track of registered users
+    int total_transactions = 0;
 
     FILE *usertxt = fopen("Users.txt", "r");
     FILE *itemtxt = fopen("Items.txt", "r");
+    FILE *transtxt = fopen("Transactions.dat", "rb");
 
     //system("clear");
-    
+     
     if (usertxt == NULL || itemtxt == NULL)
         return 1;
 
@@ -35,14 +37,7 @@ int main()
     fclose(usertxt);
     fclose(itemtxt);
 
-    printf("\n _    _        _                                _____        _____  _                    _  _ \n");
-    printf("| |  | |      | |                              |_   _|      /  ___|| |                  (_)| |\n");
-    printf("| |  | |  ___ | |  ___  ___   _ __ ___    ___    | |  ___   \\ `--. | |__    __ _  _ __   _ | |\n");
-    printf("| |/\\| | / _ \\| | / __|/ _ \\ | '_ ` _ \\  / _ \\   | | / _ \\   `--. \\| '_ \\  / _` || '_ \\ | || |\n");
-    printf("\\  /\\  /|  __/| || (__| (_) || | | | | ||  __/   | || (_) | /\\__/ /| | | || (_| || |_) || ||_|\n");
-    printf(" \\/  \\/  \\___||_| \\___|\\___/ |_| |_| |_| \\___|   \\_/ \\___/  \\____/ |_| |_| \\__,_|| .__/ |_|(_)\n");
-    printf("                                                                                 | |          \n");
-    printf("                                                                                 |_|          \n");
+    printWelcome();
 
     do
     {
@@ -55,8 +50,13 @@ int main()
         switch(choice)
         {
             case 1:
-                registerUser(account, &nUsers);
-                printf("\n---Have successfully registered the user---\n");
+                if (nUsers < MAX_USERS)
+                {
+                    registerUser(account, &nUsers);
+                    printf("\n---Have successfully registered the user---\n");
+                }
+                else
+                    printf("\n---Users registered have reached the maximum allowed---\n");
                 sleep(1);
                 break;
             case 2:
@@ -73,7 +73,7 @@ int main()
                 itemtxt = fopen("Items.txt", "w");
                 
                 for (i = 0; i < nUsers; i++)
-                    fprintf(usertxt, "%d %s\n%s\n%s\n%s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+                    fprintf(usertxt, "%d %s\n%s\n%s\n%llu\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
 
                 for (i = 0; i < nUsers; i++)
                 {
@@ -98,6 +98,19 @@ int main()
     printf("\nThank you for using the app!\n");
     sleep(1);
     return 0;
+}
+
+
+void printWelcome()
+{
+    printf("\n _    _        _                                _____        _____  _                    _  _ \n");
+    printf("| |  | |      | |                              |_   _|      /  ___|| |                  (_)| |\n");
+    printf("| |  | |  ___ | |  ___  ___   _ __ ___    ___    | |  ___   \\ `--. | |__    __ _  _ __   _ | |\n");
+    printf("| |/\\| | / _ \\| | / __|/ _ \\ | '_ ` _ \\  / _ \\   | | / _ \\   `--. \\| '_ \\  / _` || '_ \\ | || |\n");
+    printf("\\  /\\  /|  __/| || (__| (_) || | | | | ||  __/   | || (_) | /\\__/ /| | | || (_| || |_) || ||_|\n");
+    printf(" \\/  \\/  \\___||_| \\___|\\___/ |_| |_| |_| \\___|   \\_/ \\___/  \\____/ |_| |_| \\__,_|| .__/ |_|(_)\n");
+    printf("                                                                                 | |          \n");
+    printf("                                                                                 |_|          \n");
 }
 
 
@@ -141,11 +154,8 @@ void loadUsers(FILE *txt, User account[], int *nUsers)
         fgets(account[*nUsers].address, 32, txt);
         rmNewLine(account[*nUsers].address);
 
-        fgets(account[*nUsers].contact, 13, txt);
-        rmNewLine(account[*nUsers].contact);
-
-        // fscanf(txt, "%d", &(account[nUsers].contact));
-        // scanf("%d", &(account[nUsers].contact));
+        fscanf(txt, "%llu", &(account[*nUsers].contact));
+        //scanf("%d", &(account[*nUsers].contact));
 
         account[*nUsers].nProduct = 0;
         account[*nUsers].inCart = 0;
@@ -228,12 +238,11 @@ void registerUser(User account[], int *nUsers)
     fgets(account[*nUsers].address, 32, stdin);
 
     printf("Enter your 11-digit contact number: ");
-    fgets(account[*nUsers].contact, 13, stdin);
+    scanf("%llu", &account[*nUsers].contact);
 
     rmNewLine(account[*nUsers].pw);
     rmNewLine(account[*nUsers].name);
     rmNewLine(account[*nUsers].address);
-    rmNewLine(account[*nUsers].contact);
 
     account[*nUsers].nProduct = 0;
     *nUsers += 1;
@@ -247,7 +256,9 @@ void adminMenu(User account[], int nUsers)
 
     do
     {
-        printf("\n--ADMIN MENU--\n");
+        printf("\n%s\n", "===============================");
+        printf("         --ADMIN MENU--");
+        printf("\n%s\n", "===============================");
         printf("\n[1] Show All Users\n");
         printf("[2] Show All Sellers\n");
         printf("[3] Show Total Sales in Given Duration\n");
@@ -264,7 +275,7 @@ void adminMenu(User account[], int nUsers)
                 system("clear");
                 printf("\n   User ID\t|\tPassword\t|\t      Name \t\t|\t\t  Address\t\t|\tContact No.\n\n");
                 for (i = 0; i < nUsers; i++)
-                    printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+                    printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11llu\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
                 break;
 
             // SHOW ALL SELLERS
@@ -273,7 +284,7 @@ void adminMenu(User account[], int nUsers)
                 for (i = 0; i < nUsers; i++)
                 {
                     if (account[i].nProduct != 0)
-                        printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11s\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
+                        printf("%10d\t\t%8s\t\t%18s\t\t%26s\t\t%11llu\n\n", account[i].userID, account[i].pw, account[i].name, account[i].address, account[i].contact);
                 }
                 break;
 
