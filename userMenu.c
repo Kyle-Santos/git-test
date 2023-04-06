@@ -138,6 +138,14 @@ void showItemsInTable(Item p[], int n)
         printf("%10s\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
 }
 
+void showCartInTable(Item p[], int n)
+{
+    int i;
+    printf("\nSeller ID\t|\tProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n\n");
+    for (i = 0; i < n; i++)
+        printf("%9s\t\t%10s\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].sellerID, p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
+}
+
 void ViewProdBySellerID(User acc[], const int nUsers)
 {
     int i;
@@ -160,7 +168,6 @@ void ViewProdBySellerID(User acc[], const int nUsers)
         
         }
 }
-
 
 void sellMenu(User *acc, int *numProduct)
 {
@@ -360,31 +367,27 @@ void getDate(int *m, int *d, int *y)
 {
     do
     {
-        printf("\nEnter the current month in numeric: ");
-        scanf("%d", m);
-        printf("Enter the current day in numeric: ");
-        scanf("%d", d);
-        printf("Enter the current year in numeric: ");
-        scanf("%d", y);
-
-    } while ((*m > 12 && *m <= 0) || (*d > 31 && *d <= 0));
+        printf("\nEnter the date of transaction (MM/DD/YYYY): ");
+        scanf("%d/%d/%d", m, d, y);
+    } while ((*m > 12 && *m <= 0) || (*d > 31 && *d <= 0) || *y < 1900);
 }
 
 
-int buyMenu(User acc[], const int nUsers, int accInd)
+int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nTrans)
 {
-    int i, j, k,// counter
+    int i, j, k, // counter
         choice = 0, 
         found = 0, 
         id_prod = 0,
         quantity = 0,
         available = 0,
         month, day, year;
+    int *n; // int pointer for storing address of struct int elements. TO SHORTEN CALLING STRUCTS
     char t;
     double total_amount = 0;
     string category, bin, id;
     Item *thing;
-    FILE *bag = NULL;
+    FILE *bag = NULL, *trans;
     Item remove;
     
     sprintf(bin, "%s.bag", acc[accInd].userID);
@@ -502,6 +505,16 @@ int buyMenu(User acc[], const int nUsers, int accInd)
                     getchar();
                     
                     found = searchSeller(acc, nUsers, id, &id_prod);
+
+                    // checks if the seller ID found is the same as the buyer.
+                    // To avoid buying from self
+                    if (found)
+                        if (strcmp(acc[accInd].userID, acc[found].userID) == 0)
+                        {
+                            printf("\nError: You cannot buy products from yourself.\n");
+                            found = 0;
+                        }
+
                 } while (!found);
 
                 printf("Enter the quantity you wanna buy: ");
@@ -632,7 +645,6 @@ int buyMenu(User acc[], const int nUsers, int accInd)
             // CHECK OUT MENU
             case 7:
                 choice = 0;
-                strcpy(id, " ");
 
                 // check if cart of any product quantity is more than the stocks of the seller
                 for (i = 0; i < acc[accInd].inCart; i++)
@@ -672,6 +684,7 @@ int buyMenu(User acc[], const int nUsers, int accInd)
 
                         switch (choice)
                         {
+                            // ALL
                             case 1:
                                 total_amount = 0;
                                 SortCartBySellerID(acc[accInd].cart, acc[accInd].inCart);
@@ -682,6 +695,9 @@ int buyMenu(User acc[], const int nUsers, int accInd)
                                 {   
                                     if (strcmp(id, acc[accInd].cart[i].sellerID) != 0)
                                     {
+                                        n = &out[*nTrans].nItems;
+                                        *n = 0;
+
                                         strcpy(id, acc[accInd].cart[i].sellerID);
 
                                         for (j = 0; j < acc[accInd].inCart; j++)
@@ -691,37 +707,189 @@ int buyMenu(User acc[], const int nUsers, int accInd)
                                             {
                                                 printf("%8d \t%10s\t\t%8s\t\t%10.2lf\t\t%3.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
                                                 total_amount += (thing->price * thing->quantity);
+                                                out[*nTrans].checkout[*n] = *thing;
+                                                *n += 1;
                                             }
                                         }
 
-                                        // fix the bug where users are able to buy from themselves. fix the data type of numerics
                                         found = findUser(acc, nUsers, id);
                                         printf("\nTotal amount due: %lf\n", total_amount);
                                         printf("\nSeller ID: %s\tSeller Name: %s\n", acc[found].userID, acc[found].name);
+
+                                        // add transaction
+                                        out[*nTrans].date.month = month;
+                                        out[*nTrans].date.day = day;
+                                        out[*nTrans].date.year = year;
+                                        
+                                        out[*nTrans].amount = total_amount;
+                                        strcpy(out[*nTrans].sellerID, acc[found].userID);
+                                        strcpy(out[*nTrans].buyerID, acc[accInd].userID);
+
+                                        // remove in cart
+                                        for (i = 0; i < acc[accInd].inCart; i++)
+                                            acc[accInd].cart[i] = remove;
+                                        
+                                        acc[accInd].inCart = 0;
+
+                                        *nTrans += 1;
                                     }
                                 }
+
+                                //printf("\n\n%d/%d/%d %s %s %.2lf\n\n", out[0].date.month, out[0].date.day, out[0].date.year, out[0].buyerID, out[0].sellerID, out[0].amount);
+
+                                sleep(1);
                                 break;
 
+                            // BY A SPECIFIC SELLER
                             case 2:
-                                showItemsInTable(acc[accInd].cart, acc[accInd].inCart);
-                                printf("Input the seller ID of the seller: ");
-                                scanf("%s", id);
-
-                                printf("\nQuantity\t|\tProduct ID\t|\tItem Name\t|\tUnit Price\t|\tTotal\n\n");
-
-                                for (i = 0; i < acc[accInd].inCart; i++)
+                                if (acc[accInd].inCart > 0)
                                 {
-                                    thing = &acc[accInd].cart[i];
-                                    if (thing->sellerID == id)
-                                        printf("%8d\t\t%10s\t\t%8s\t\t%10.2lf\t\t%5.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
+                                    total_amount = 0;
+                                    
+                                    showCartInTable(acc[accInd].cart, acc[accInd].inCart);
+                                    printf("Input the seller ID of the seller: ");
+                                    scanf("%s", id);
+
+                                    printf("\nQuantity\t|\tProduct ID\t|\tItem Name\t|\tUnit Price\t|\tTotal\n\n");
+
+                                    n = &out[*nTrans].nItems;
+                                    *n = 0;
+
+                                    for (i = 0; i < acc[accInd].inCart; i++)
+                                    {
+                                        thing = &acc[accInd].cart[i];
+                                        if (strcmp(thing->sellerID, id) == 0)
+                                        {
+                                            printf("%8d\t\t%10s\t\t%8s\t\t%10.2lf\t\t%5.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
+                                            total_amount += (thing->price * thing->quantity);
+                                            out[*nTrans].checkout[*n] = *thing;
+                                            *n += 1;
+                                        }
+                                    }
+
+                                    found = findUser(acc, nUsers, id);
+                                    
+                                    if (found)
+                                    {
+                                        printf("\nTotal amount due: %lf\n", total_amount);
+                                        printf("\nSeller ID: %s\tSeller Name: %s\n", acc[found].userID, acc[found].name);
+
+                                        // add transaction
+                                        out[*nTrans].date.month = month;
+                                        out[*nTrans].date.day = day;
+                                        out[*nTrans].date.year = year;
+                                        
+                                        out[*nTrans].amount = total_amount;
+                                        strcpy(out[*nTrans].sellerID, acc[found].userID);
+                                        strcpy(out[*nTrans].buyerID, acc[accInd].userID);
+
+
+                                        for (i = 0; i < out[*nTrans].nItems; i++)
+                                        {
+                                            for (j = 0; j < acc[accInd].inCart; j++)
+                                            {
+                                                if (strcmp(out[*nTrans].checkout[i].prodID, acc[accInd].cart[j].prodID) == 0)
+                                                {
+                                                    acc[accInd].cart[j] = remove;
+                                                    
+                                                    for (k = j + 1; k < acc[accInd].inCart; k++, j++)
+                                                        acc[accInd].cart[j] = acc[accInd].cart[k];
+
+                                                    acc[accInd].inCart -= 1;
+                                                }
+                                            }
+                                        }
+
+                                        *nTrans += 1;
+                                    }
                                 }
+                                else
+                                    printf("\nTheres nothing to check out.\n");
+                                
+                                sleep(1);
                                 break;
                             
+                            // SPECIFIC ITEM
                             case 3:
+                                if (acc[accInd].inCart > 0)
+                                {
+                                    total_amount = 0;
+                                    
+                                    showCartInTable(acc[accInd].cart, acc[accInd].inCart);
+                                    printf("Input the Product ID of the item: ");
+                                    scanf("%s", id);
+
+                                    printf("\nQuantity\t|\tProduct ID\t|\tItem Name\t|\tUnit Price\t|\tTotal\n\n");
+
+                                    n = &out[*nTrans].nItems;
+                                    *n = 0;
+
+                                    for (i = 0; i < acc[accInd].inCart; i++)
+                                    {
+                                        thing = &acc[accInd].cart[i];
+                                        if (strcmp(thing->prodID, id) == 0)
+                                        {
+                                            printf("%8d\t\t%10s\t\t%8s\t\t%10.2lf\t\t%5.2lf\n\n", thing->quantity, thing->prodID, thing->item_name, thing->price, thing->price * thing->quantity);
+                                            total_amount += (thing->price * thing->quantity);
+                                            out[*nTrans].checkout[*n] = *thing;
+                                            *n += 1;
+                                            i = acc[accInd].inCart + 1;
+                                            strcpy(id, thing->sellerID);
+
+                                            found = findUser(acc, nUsers, id);
+                                            for (j = 0; j < acc[found].nProduct; j++)
+                                                if (strcmp(thing->prodID, acc[found].products[j].prodID) == 0)
+                                                    acc[found].products[j].quantity -= thing->quantity;
+                                        }
+                                    }
+
+                                    if (i != acc[accInd].inCart)
+                                    {
+                                        //found = findUser(acc, nUsers, id);
+                                        printf("\nTotal amount due: %lf\n", total_amount);
+                                        printf("\nSeller ID: %s\tSeller Name: %s\n", acc[found].userID, acc[found].name);
+
+                                        // add transaction
+                                        out[*nTrans].date.month = month;
+                                        out[*nTrans].date.day = day;
+                                        out[*nTrans].date.year = year;
+                                        
+                                        out[*nTrans].amount = total_amount;
+                                        strcpy(out[*nTrans].sellerID, acc[found].userID);
+                                        strcpy(out[*nTrans].buyerID, acc[accInd].userID);
+
+                                        for (i = 0; i < acc[accInd].inCart; i++)
+                                        {
+                                            if (strcmp(out[*nTrans].checkout[i].prodID, acc[accInd].cart[j].prodID) == 0)
+                                            {
+                                                acc[accInd].cart[j] = remove;
+
+                                                for (j = i + 1; j < acc[accInd].inCart; i++, j++)
+                                                    acc[accInd].cart[j] = acc[accInd].cart[k];
+                                                    
+                                                acc[accInd].inCart -= 1;
+                                                i = acc[accInd].inCart + 1;
+                                            }
+                                        }
+
+                                        *nTrans += 1;
+                                    }
+                                }
+                                else
+                                    printf("\nTheres nothing to check out.\n");
+                                
+                                sleep(1);
+                                
                                 break;
 
                             case 4:
                                 printf("\nGoing back to the Buy Menu...\n");
+
+                                trans = fopen("Transactions.dat", "wb");
+                                fwrite(nTrans, sizeof(int), 1, trans);
+                                fwrite(out, sizeof(Transaction), *nTrans, trans);
+                                fclose(trans);
+
                                 sleep(1);
                                 break;
                             
@@ -751,7 +919,7 @@ int buyMenu(User acc[], const int nUsers, int accInd)
 }
 
 
-void userMenu(User account[], int nUsers)
+void userMenu(User account[], int nUsers, Transaction checkout[], int *nTrans)
 {
     int i, on = 1; // ctr
     int choice = 0; // choice for seller menu
@@ -800,7 +968,7 @@ void userMenu(User account[], int nUsers)
                     
                     case 2: // BUY MENU
                         // pass transactions
-                        i = buyMenu(account, nUsers, i);
+                        i = buyMenu(account, nUsers, i, checkout, nTrans);
                         break;
                     case 3: // exit user menu
                         if (account[i].inCart != 0)

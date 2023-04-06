@@ -42,16 +42,22 @@ typedef struct user
     int nProduct; // keeps track of the number of products a seller sells 
 } User;
 
+typedef struct date 
+{
+    int month, 
+        day, 
+        year;
+} Date;
 
 typedef struct transaction
 {
-    int month, day, year;
+    Date date;
 
     Item checkout[5]; // could have different quantity per item
     int nItems;
     
-    int buyerID;
-    int sellerID; // should have the same seller for all the items
+    string buyerID;
+    string sellerID; // should have the same seller for all the items
     double amount;
 
 } Transaction;
@@ -86,10 +92,10 @@ void ViewProdBySellerID(User acc[], const int nUsers);
 
 void sellMenu(User *acc, int *numProduct);
 
-int buyMenu(User acc[], const int nUsers, int accInd);
+int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nTrans);
 
-void userMenu(User account[], int nUsers);
+void userMenu(User account[], int nUsers, Transaction checkout[], int *nTrans);
 
 
 // ADMIN MENU FUNCTION/S
-void adminMenu(User account[], int nUsers);
+void adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans);
