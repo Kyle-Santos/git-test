@@ -10,6 +10,24 @@ int isLenCorrect(string str, int len)
     return 0;
 }
 
+// Function to check if a string contains a substring
+int contains_substring(string str, string substr) {
+    int str_len = strlen(str);
+    int substr_len = strlen(substr);
+	int i, j;
+    for (i = 0; i <= str_len - substr_len; i++) {
+        for (j = 0; j < substr_len; j++) {
+            if (str[i + j] != substr[j]) {
+                break;
+            }
+        }
+        if (j == substr_len) {
+            return 1; // True, the substring is found
+        }
+    }
+    return 0; // False, the substring is not found
+}
+
 int searchSeller(User acc[], const int nUsers, string id, int *prod_index)
 {
     int i, j;
@@ -385,7 +403,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
     int *n; // int pointer for storing address of struct int elements. TO SHORTEN CALLING STRUCTS
     char t;
     double total_amount = 0;
-    string category, bin, id;
+    string category, bin, id, search;
     Item *thing;
     FILE *bag = NULL, *trans;
     Item remove;
@@ -469,7 +487,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                                     getchar();
                                 }
 
-                                if (t != 'N') j = acc[i].nProduct;
+                                if (t != 'N' && t != 'n') j = acc[i].nProduct;
                             }
                             
                     }
@@ -484,6 +502,35 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
 
             // SEARCH PRODUCTS BY NAME'
             case 4:
+                printf("\nEnter the keyword you want to search for: ");
+			    scanf("%s", search);
+			
+			    found = 0;
+			    for(i = 0; i < nUsers; i++)
+                {
+                    for (j = 0; j < acc[i].nProduct; j++) 
+                    {
+                        if (contains_substring(acc[i].products[j].item_name, search)) 
+                        {
+                            found = 1;
+                            printf("\nProduct ID: %s\nItem Name: %s\nQuantity: %d\nPrice: %.2lf\n\n", acc[i].products[j].prodID, acc[i].products[j].item_name, acc[i].products[j].quantity,acc[i].products[j].price);
+                            
+                            if (i != acc[i].nProduct - 1) 
+                            {
+                                printf("Type [N] to see next or [X] to exit viewing: ");
+                                scanf(" %c", &t);
+                                getchar();
+                            }
+                
+                            if (t != 'N' && t != 'n') j = acc[i].nProduct;
+                        }
+                    }
+		        }
+			    if (!found) 
+                {
+			        printf("\nKeyword does not match any products. You will be redirected back to the User Menu.\n");
+			        sleep(1);
+			    }
 
                 break;
 
