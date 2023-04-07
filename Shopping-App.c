@@ -36,7 +36,7 @@ int main()
 
     fclose(transtxt);
 
-    //system("clear");
+    system("clear");
      
     if (usertxt == NULL || itemtxt == NULL)
         return 1;
@@ -110,6 +110,11 @@ int main()
 }
 
 
+/************************************************   
+    Prints a welcoming message
+    @return N/A
+    Pre-condition: 
+************************************************/
 void printWelcome()
 {
     printf("\n _    _        _                                _____        _____  _                    _  _ \n");
@@ -123,6 +128,11 @@ void printWelcome()
 }
 
 
+/************************************************  
+    Prints the main menu choices
+    @return N/A
+    Pre-condition: 
+************************************************/
 void menu()
 {
     sleep(1);
@@ -136,6 +146,12 @@ void menu()
 }
 
 
+/************************************************   
+    Removes the new line from strings scanned from fgets
+    @param - string str - string that will have its \n removed
+    @return N/A
+    Pre-condition: 
+************************************************/
 void rmNewLine(string str)
 {
     int i = 0;
@@ -148,6 +164,14 @@ void rmNewLine(string str)
 }
 
 
+/************************************************   
+    Loads the users in Users.txt to the User account[] array
+    @param - FILE *txt - file pointer that points to Users.txt
+    @param - User account[] - array of users
+    @param - int *nUsers - number of users
+    @return N/A
+    Pre-condition: 
+************************************************/
 void loadUsers(FILE *txt, User account[], int *nUsers)
 {
     while (fscanf(txt, "%s", account[*nUsers].userID) == 1)
@@ -172,6 +196,14 @@ void loadUsers(FILE *txt, User account[], int *nUsers)
 }
 
 
+/************************************************ 
+    Loads the items in Items.txt to their respective seller 
+    @param - FILE *txt - file pointer that points to Items.txt
+    @param - User account[] - array of users
+    @param - const int nUsers - number of users
+    @return N/A
+    Pre-condition: 
+************************************************/
 void loadItems(FILE *txt, User account[], const int nUsers)
 {
     int i;
@@ -213,6 +245,12 @@ void loadItems(FILE *txt, User account[], const int nUsers)
 }
 
 
+/************************************************   
+    Checks if the string only has numeric characters
+    @param - string str - string to be checked
+    @return 0 if all characters are numeric, 1 if not
+    Pre-condition: 
+************************************************/
 int isNumeric(string str)
 {
     int i = 0;
@@ -232,6 +270,13 @@ int isNumeric(string str)
 }
 
 
+/************************************************   
+    Registers or adds a user into the array of users
+    @param - User account[] - array of users
+    @param - int *nUsers - number of users
+    @return N/A
+    Pre-condition:
+************************************************/
 void registerUser(User account[], int *nUsers)
 {
     int i;
@@ -276,6 +321,14 @@ void registerUser(User account[], int *nUsers)
     *nUsers += 1;
 }
 
+
+/************************************************   
+    Sorts the Transaction array in increasing order by Seller ID
+    @param - Transaction t[] - array of transactions
+    @param -  int n - number of transactions
+    @return N/A
+    Pre-condition: 
+************************************************/
 void sortTransactionsBySellerID(Transaction t[], int n)
 {
     int i, j; // variables for looping
@@ -303,6 +356,14 @@ void sortTransactionsBySellerID(Transaction t[], int n)
     }
 }
 
+
+/************************************************   
+    Sorts the Transaction array in increasing order by Buyer ID
+    @param - Transaction t[] - array of transactions
+    @param -  int n - number of transactions
+    @return N/A
+    Pre-condition: 
+************************************************/
 void sortTransactionsByBuyerID(Transaction t[], int n)
 {
     int i, j; // variables for looping
@@ -330,6 +391,16 @@ void sortTransactionsByBuyerID(Transaction t[], int n)
     }
 }
 
+
+/*********************************************** 
+    Admin Features are all displayed and run here. 
+    @param - User account[] - array of users
+    @param - int nUsers - number of users
+    @param - Transaction receipt[] - array of transactions
+    @param - int nTrans - number of transactions
+    @return N/A
+    Pre-condition: 
+************************************************/
 void adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans)
 {
     int i, j,

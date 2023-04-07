@@ -1,7 +1,13 @@
 #include "Shopping-App.h"
 
 
-// return 0 if string length is below or equal to max, 1 if not
+/******************************************************
+    returns 0 if string length is below or equal to max, 1 if not
+    @param string str - string that contains any character
+    @param len - The maxiumum length of the string to be checked
+    @return 0 if string length is below or equal to max, 1 if not
+    Pre-condition: 
+******************************************************/
 int isLenCorrect(string str, int len)
 {
     if (strlen(str) > len)
@@ -10,7 +16,14 @@ int isLenCorrect(string str, int len)
     return 0;
 }
 
-// Function to check if a string contains a substring
+
+/******************************************************
+    Function to check if a string contains a substring
+    @param string str - string that contains any character
+    @param string substr - string keyword to be checked
+    @return 1 if substring is found, 0 if not
+    Pre-condition: 
+******************************************************/
 int contains_substring(string str, string substr) {
     int str_len = strlen(str);
     int substr_len = strlen(substr);
@@ -28,6 +41,35 @@ int contains_substring(string str, string substr) {
     return 0; // False, the substring is not found
 }
 
+
+/******************************************************
+    Gets the input date from the user
+    @param - int *m - address of the month variable
+    @param - int *d - address of the day variable
+    @param - int *y - address of the year variable
+    @return N/A
+    Pre-condition: 
+******************************************************/
+void getDate(int *m, int *d, int *y)
+{
+    do
+    {
+        printf("\nEnter the date of transaction (MM/DD/YYYY): ");
+        scanf("%d/%d/%d", m, d, y);
+        fflush(stdin);
+    } while ((*m > 12 && *m <= 0) || (*d > 31 && *d <= 0) || *y < 1900);
+}
+
+
+/******************************************************
+    Search seller ID in the array of users and returns the seller's index
+    @param User acc[] - array of users
+    @param const int nUsers - The number of user in the array
+    @param string id - the product id of the product that is being looked for
+    @param *prod_index - parameter for storing the index of the product  
+    @return seller's index if found, 0 if not
+    Pre-condition: 
+******************************************************/
 int searchSeller(User acc[], const int nUsers, string id, int *prod_index)
 {
     int i, j;
@@ -45,6 +87,14 @@ int searchSeller(User acc[], const int nUsers, string id, int *prod_index)
     return 0;
 }
 
+
+/******************************************************
+    Sorts an Item array by product ID. (from lowest to highest)
+    @param Item p[] - array of items
+    @param int size - size of the array
+    @return N/A
+    Pre-condition: 
+******************************************************/
 void SortByProdID(Item p[], int size)
 {
     int i, j; // variables for looping
@@ -56,7 +106,7 @@ void SortByProdID(Item p[], int size)
     {
         for (i = 0; i < size - 1; i++)
         {
-            strcmp(lowID, p[i].prodID);
+            strcpy(lowID, p[i].prodID);
             pos = i;
             for (j = i + 1; j < size; j++)
                 if (strcmp(lowID, p[j].prodID) > 0)
@@ -75,6 +125,14 @@ void SortByProdID(Item p[], int size)
     }
 }
 
+
+/******************************************************
+    Sorts an Item array by seller ID. (from lowest to highest)
+    @param - Item p[] - array of items
+    @param - int size - size of p array
+    @return N/A
+    Pre-condition:
+******************************************************/
 void SortCartBySellerID(Item p[], int size)
 {
     int i, j; // variables for looping
@@ -105,7 +163,16 @@ void SortCartBySellerID(Item p[], int size)
     }
 }
 
-int SortUserBySellerID(User acc[], const int nUsers, int logged)
+
+/******************************************************
+    Sorts User array by user ID. (from lowest to highest) returns the index of the user currently logged in.
+    @param - User acc[] - array of users 
+    @param - const int nUsers - number of users 
+    @param - int logged
+    @return index of the user currently logged in
+    Pre-condition: 
+******************************************************/
+int SortUserByUserID(User acc[], const int nUsers, int logged)
 {
     int i, j; // variables for looping
     string lowID;
@@ -137,6 +204,15 @@ int SortUserBySellerID(User acc[], const int nUsers, int logged)
     return logged;
 }
 
+
+/******************************************************
+    Search user ID in the array of users and returns the user's index
+    @param - User acc[] - array of users
+    @param - const int n - number of users in the array
+    @param - string id - user id being looked for
+    @return user's index
+    Pre-condition: 
+******************************************************/
 int findUser(User acc[], const int n, string id)
 {
     int i;
@@ -148,6 +224,14 @@ int findUser(User acc[], const int n, string id)
     return -1;
 }
 
+
+/******************************************************
+    print items in a table
+    @param - Item p[] - array of items
+    @param - int n - number of items in the array
+    @return N/A
+    Pre-condition: 
+******************************************************/
 void showItemsInTable(Item p[], int n)
 {
     int i;
@@ -156,6 +240,14 @@ void showItemsInTable(Item p[], int n)
         printf("%10s\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
 }
 
+
+/******************************************************
+    print cart items in a table
+    @param - Item p[] - array of items
+    @param - int n - number of items in the array
+    @return N/A
+    Pre-condition: 
+******************************************************/
 void showCartInTable(Item p[], int n)
 {
     int i;
@@ -164,6 +256,14 @@ void showCartInTable(Item p[], int n)
         printf("%9s\t\t%10s\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].sellerID, p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
 }
 
+
+/******************************************************
+    prints the products by seller ID
+    @param - User acc[] - array of items
+    @param - const int nUsers - number of items in the array
+    @return N/A
+    Pre-condition: 
+******************************************************/
 void ViewProdBySellerID(User acc[], const int nUsers)
 {
     int i;
@@ -187,6 +287,14 @@ void ViewProdBySellerID(User acc[], const int nUsers)
         }
 }
 
+
+/******************************************************
+    All features of Sell Menu
+    @param - User *acc - the user that is currently logged in 
+    @param - int *numProduct - number of products that the seller is currently selling
+    @return N/A
+    Pre-condition: 
+******************************************************/
 void sellMenu(User *acc, int *numProduct)
 {
     Item *thing = NULL;
@@ -381,16 +489,16 @@ void sellMenu(User *acc, int *numProduct)
 }
 
 
-void getDate(int *m, int *d, int *y)
-{
-    do
-    {
-        printf("\nEnter the date of transaction (MM/DD/YYYY): ");
-        scanf("%d/%d/%d", m, d, y);
-    } while ((*m > 12 && *m <= 0) || (*d > 31 && *d <= 0) || *y < 1900);
-}
-
-
+/******************************************************
+    All features of Buy Menu
+    @param - User acc[] - array of users
+    @param - const int nUsers - number of users
+    @param - int accInd - index of the user that is logged in 
+    @param - Transaction out[] - array of transactions
+    @param - int *nTrans - number of transactions 
+    @return N/A
+    Pre-condition: 
+******************************************************/
 int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nTrans)
 {
     int i, j, k, // counter
@@ -406,7 +514,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
     string category, bin, id, search;
     Item *thing;
     FILE *bag = NULL, *trans;
-    Item remove;
+    Item remove = {0}; // empty struct for removing elements of a struct array 
     
     sprintf(bin, "%s.bag", acc[accInd].userID);
     bag = fopen(bin, "rb");
@@ -436,7 +544,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
         {
             // VIEW ALL PRODUCTS
             case 1:
-                accInd = SortUserBySellerID(acc, nUsers, accInd);
+                accInd = SortUserByUserID(acc, nUsers, accInd);
                 ViewProdBySellerID(acc, nUsers);
                 break;
 
@@ -556,26 +664,42 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                     // checks if the seller ID found is the same as the buyer.
                     // To avoid buying from self
                     if (found)
+                    {
                         if (strcmp(acc[accInd].userID, acc[found].userID) == 0)
                         {
                             printf("\nError: You cannot buy products from yourself.\n");
                             found = 0;
                         }
+                        for (i = 0; i < acc[accInd].inCart; i++)
+                            if (strcmp(id, acc[accInd].cart[i].prodID) == 0)
+                            {
+                                printf("\nError: You can't add to cart items that are already in your cart.\n");
+                                printf("\nYou will be redirected back to Buy Menu.\n");
+                                i = acc[accInd].inCart + 1;
+                            }
+                        
+                        if (i == acc[accInd].inCart)
+                        {
+                            printf("Enter the quantity you wanna buy: ");
+                            scanf("%d", &quantity);
+                            
+                            if (quantity > acc[found].products[id_prod].quantity || quantity <= 0)
+                                printf("\nError: Quantity entered is invalid. Item wasn't added.\n");
+                            else
+                            {
+                                acc[accInd].cart[acc[accInd].inCart] = acc[found].products[id_prod];
+                                acc[accInd].cart[acc[accInd].inCart].quantity = quantity;
+                                acc[accInd].inCart++;
+                                printf("\nItem successfully added.\n");
+                                sleep(1);
+                            }
+                        }
+                    }
+
 
                 } while (!found);
 
-                printf("Enter the quantity you wanna buy: ");
-                scanf("%d", &quantity);
-                
-                if (quantity > acc[found].products[id_prod].quantity || quantity <= 0)
-                    printf("\nError: Quantity entered is invalid. Item wasn't added.\n");
-                else
-                {
-                    acc[accInd].cart[acc[accInd].inCart] = acc[found].products[id_prod];
-                    acc[accInd].cart[acc[accInd].inCart].quantity = quantity;
-                    acc[accInd].inCart++;
-                }
-
+                sleep(1);
                 break;
 
             // EDIT CART
@@ -617,9 +741,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                             for (i = 0; i < acc[accInd].inCart; i++)
                             {
                                 if (strcmp(id, acc[accInd].cart[i].prodID) == 0)
-                                {
-                                    acc[accInd].cart[i] = remove;
-                                    
+                                {   
                                     for (j = i + 1; j < acc[accInd].inCart; j++, i++)
                                         acc[accInd].cart[i] = acc[accInd].cart[j];
 
@@ -733,7 +855,10 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                         {
                             // ALL
                             case 1:
+                                strcpy(id, "");
                                 total_amount = 0;
+
+                                // sorts the cart items by seller ID
                                 SortCartBySellerID(acc[accInd].cart, acc[accInd].inCart);
 
                                 printf("\nQuantity |\tProduct ID\t|\tItem Name\t|\tUnit Price\t|\tTotal\n\n");
@@ -747,7 +872,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
 
                                         strcpy(id, acc[accInd].cart[i].sellerID);
 
-                                        for (j = 0; j < acc[accInd].inCart; j++)
+                                        for (j = i; j < acc[accInd].inCart; j++)
                                         {
                                             thing = &acc[accInd].cart[j];
                                             if (strcmp(thing->sellerID, id) == 0)
@@ -756,11 +881,17 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                                                 total_amount += (thing->price * thing->quantity);
                                                 out[*nTrans].checkout[*n] = *thing;
                                                 *n += 1;
+
+                                                strcpy(id, thing->sellerID);
+
+                                                found = findUser(acc, nUsers, id);
+                                                for (k = 0; k < acc[found].nProduct; k++)
+                                                    if (strcmp(thing->prodID, acc[found].products[k].prodID) == 0)
+                                                        acc[found].products[k].quantity -= thing->quantity;
                                             }
                                         }
 
-                                        found = findUser(acc, nUsers, id);
-                                        printf("\nTotal amount due: %lf\n", total_amount);
+                                        printf("\nTotal amount due: %.2lf\n", total_amount);
                                         printf("\nSeller ID: %s\tSeller Name: %s\n", acc[found].userID, acc[found].name);
 
                                         // add transaction
@@ -811,10 +942,15 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                                             total_amount += (thing->price * thing->quantity);
                                             out[*nTrans].checkout[*n] = *thing;
                                             *n += 1;
+
+                                            strcpy(id, thing->sellerID);
+
+                                            found = findUser(acc, nUsers, id);
+                                            for (j = 0; j < acc[found].nProduct; j++)
+                                                if (strcmp(thing->prodID, acc[found].products[j].prodID) == 0)
+                                                    acc[found].products[j].quantity -= thing->quantity;
                                         }
                                     }
-
-                                    found = findUser(acc, nUsers, id);
                                     
                                     if (found)
                                     {
@@ -836,9 +972,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                                             for (j = 0; j < acc[accInd].inCart; j++)
                                             {
                                                 if (strcmp(out[*nTrans].checkout[i].prodID, acc[accInd].cart[j].prodID) == 0)
-                                                {
-                                                    acc[accInd].cart[j] = remove;
-                                                    
+                                                {    
                                                     for (k = j + 1; k < acc[accInd].inCart; k++, j++)
                                                         acc[accInd].cart[j] = acc[accInd].cart[k];
 
@@ -909,8 +1043,6 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                                         {
                                             if (strcmp(out[*nTrans].checkout[i].prodID, acc[accInd].cart[j].prodID) == 0)
                                             {
-                                                acc[accInd].cart[j] = remove;
-
                                                 for (j = i + 1; j < acc[accInd].inCart; i++, j++)
                                                     acc[accInd].cart[j] = acc[accInd].cart[k];
                                                     
@@ -966,6 +1098,15 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
 }
 
 
+/******************************************************
+    All features of User Menu
+    @param - User account[] - array of users
+    @param - int nUsers - number of users 
+    @param - Transaction checkout[] - array of transactions
+    @param - int *nTrans - number of transactions
+    @return N/A
+    Pre-condition: 
+******************************************************/
 void userMenu(User account[], int nUsers, Transaction checkout[], int *nTrans)
 {
     int i, on = 1; // ctr
@@ -1043,4 +1184,3 @@ void userMenu(User account[], int nUsers, Transaction checkout[], int *nTrans)
         printf("\nUser ID or Password is incorrect. You will be redirected back to the menu.\n");
 
 }
-
