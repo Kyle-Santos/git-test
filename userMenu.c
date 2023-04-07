@@ -696,21 +696,21 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                 // check if cart of any product quantity is more than the stocks of the seller
                 for (i = 0; i < acc[accInd].inCart; i++)
                 {
-                    for (j = 0; j < nUsers; j++)
-                        if (strcmp(acc[accInd].cart[i].sellerID, acc[j].userID) == 0)
-                            for (k = 0; k < acc[j].nProduct; k++)
-                                if (strcmp(acc[j].products[k].prodID, acc[accInd].cart[i].prodID) == 0)
-                                {
-                                    if (acc[j].products[k].quantity < acc[accInd].cart[i].quantity)
-                                    {
-                                        printf("\nThe quantity of the product was changed.\n");
-                                        printf("Please go to EDIT CART to modify your cart.\n"); 
-                                        printf("The new quantity is %d and its new price is %.2lf pesos.\n", acc[j].products[k].quantity, acc[j].products[k].price);
-                                        available = 0;
-                                    }
-                                    else 
-                                        available = 1;
-                                }
+                    found = findUser(acc, nUsers, acc[accInd].cart[i].sellerID);
+
+                    for (j = 0; j < acc[found].nProduct; j++)
+                        if (strcmp(acc[found].products[j].prodID, acc[accInd].cart[i].prodID) == 0)
+                        {
+                            if (acc[found].products[j].quantity < acc[accInd].cart[i].quantity)
+                            {
+                                printf("\nThe quantity of the product was changed.\n");
+                                printf("Please go to EDIT CART to modify your cart.\n"); 
+                                printf("\nThe new quantity of %s is %d and its new price is %.2lf pesos.\n", acc[found].products[j].item_name, acc[found].products[j].quantity, acc[found].products[j].price);
+                                available = 0;
+                            }
+                            else 
+                                available = 1;
+                        }
                 }
 
                 if (available)
