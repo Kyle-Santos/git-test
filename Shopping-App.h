@@ -62,16 +62,18 @@ typedef struct transaction
 
 } Transaction;
 
-void printWelcome();
 
+// PRINTING FUNCTIONS
+void printWelcome();
 void menu();
 
-void rmNewLine(string str);
 
+void rmNewLine(string str);
 int isNumeric(string str);
 
-void loadUsers(FILE *txt, User account[], int *nUsers);
 
+// FUNCTIONS FOR LOADING FILE DATABASES
+void loadUsers(FILE *txt, User account[], int *nUsers);
 void loadItems(FILE *txt, User account[], const int nUsers);
 
 void registerUser(User account[], int *nUsers);
@@ -79,23 +81,17 @@ void registerUser(User account[], int *nUsers);
 
 // USER MENU FUNCTIONS
 int isLenCorrect(string str, int len);
-
 int searchSeller(User acc[], const int nUsers, string id, int *prod_index);
-
 void SortByProdID(Item p[], int size);
-
-int SortUserBySellerID(User acc[], const int nUsers, int accInd);
-
+int SortUserByUserID(User acc[], const int nUsers, int accInd);
 void showItemsInTable(Item p[], int n);
-
 void ViewProdBySellerID(User acc[], const int nUsers);
-
 void sellMenu(User *acc, int *numProduct);
-
 int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nTrans);
-
 void userMenu(User account[], int nUsers, Transaction checkout[], int *nTrans);
 
 
 // ADMIN MENU FUNCTION/S
 void adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans);
+void sortTransactionsByBuyerID(Transaction t[], int n);
+void sortTransactionsBySellerID(Transaction t[], int n);

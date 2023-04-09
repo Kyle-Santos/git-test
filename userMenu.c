@@ -1,21 +1,3 @@
-#include "Shopping-App.h"
-
-
-/******************************************************
-    returns 0 if string length is below or equal to max, 1 if not
-    @param string str - string that contains any character
-    @param len - The maxiumum length of the string to be checked
-    @return 0 if string length is below or equal to max, 1 if not
-    Pre-condition: 
-******************************************************/
-int isLenCorrect(string str, int len)
-{
-    if (strlen(str) > len)
-        return 1;
-        
-    return 0;
-}
-
 
 /******************************************************
     Function to check if a string contains a substring
