@@ -25,21 +25,14 @@ int main()
     int i, j, choice;
     Item temp;
     User account[MAX_USERS]; // declares an array of users with a max of 100 users
-    Transaction checkout[MAX_TRANSACTIONS];
+    Transaction checkout[MAX_TRANSACTIONS]; // declares an array of transactions with a max of 1000
     int nUsers = 0; // this is to keep track of registered users
-    int total_transactions = 0;
+    int total_transactions = 0; // this is to keep track of number of transactions
+    string username, pass;
 
     FILE *usertxt = fopen("Users.txt", "r");
     FILE *itemtxt = fopen("Items.txt", "r");
     FILE *transtxt = fopen("Transactions.dat", "rb");
-
-    if (transtxt == NULL)
-        return 1;
-
-    fread(&total_transactions, sizeof(int), 1, transtxt);
-    fread(checkout, sizeof(Transaction), total_transactions, transtxt);
-
-    fclose(transtxt);
 
     system("clear");
      
@@ -51,6 +44,14 @@ int main()
     fclose(usertxt);
     fclose(itemtxt);
 
+    if (transtxt == NULL)
+        return 1;
+
+    // reads the Transactions.dat and stores the data in checkout array
+    fread(&total_transactions, sizeof(int), 1, transtxt);
+    fread(checkout, sizeof(Transaction), total_transactions, transtxt);
+    fclose(transtxt);
+
     printWelcome();
 
     do
@@ -59,10 +60,11 @@ int main()
         menu();
 
         scanf("%d", &choice);
-        getchar();
+        fflush(stdin);
 
         switch(choice)
         {
+            // REGISTER USER
             case 1:
                 if (nUsers < MAX_USERS)
                 {
@@ -73,12 +75,30 @@ int main()
                     printf("\n---Users registered have reached the maximum allowed---\n");
                 sleep(1);
                 break;
+
+            // USER MENU
             case 2:
                 userMenu(account, nUsers, checkout, &total_transactions);
                 break;
+
+            // ADMIN MENU
             case 3:
-                adminMenu(account, nUsers, checkout, total_transactions);
+                printf("\nEnter username: ");
+                scanf("%s", username);
+                printf("\nEnter password: ");
+                scanf("%s", pass);
+
+                if (strcmp(username, "admin") == 0 && strcmp(pass, "admin") == 0)
+                {
+                    printf("\nYou are now logged in.\n");
+                    sleep(1);
+                    adminMenu(account, nUsers, checkout, total_transactions);
+                }
+                else
+                    printf("\nIncorrect Admin Account\n");
                 break;
+
+            // EXIT
             case 4:
                 printf("\nSaving All Information...\n");
                 sleep(1);

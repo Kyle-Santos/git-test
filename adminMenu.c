@@ -53,7 +53,7 @@ sortTransactionsByBuyerID(Transaction t[], int n)
 
     for (i = 0; i < n - 1; i++)
     {
-        strcmp(lowID, t[i].buyerID);
+        strcpy(lowID, t[i].buyerID);
         pos = i;
         for (j = i + 1; j < n; j++)
             if (strcmp(lowID, t[j].buyerID) > 0)
@@ -69,6 +69,95 @@ sortTransactionsByBuyerID(Transaction t[], int n)
             t[pos] = temp;
         }
     }
+}
+
+
+/************************************************   
+    Prints list of transactions
+    @param - Transaction t[] - array of transactions
+    @param -  int n - number of transactions
+    @return N/A
+    Pre-condition: 
+************************************************/
+void 
+listTransactions(Transaction t[], int n)
+{
+    int i, j;
+
+    for (i = 0; i < n; i++)
+    {
+        printf("\n**************************************\n\n");
+        printf("Date: %02d/%02d/%4d\n", t[i].date.month, t[i].date.day, t[i].date.year);
+        printf("--------------------------\n");
+        printf("No. of Different Items: %d\n\n",t[i].nItems);
+        printf("Items:\n\n");
+
+        for (j = 0; j < t[i].nItems; j++)
+            printf("  %d of %s - PHP %.2lf\n", t[i].checkout[j].quantity, t[i].checkout[j].item_name, t[i].checkout[j].price);
+        
+        printf("\nBuyer ID: %s\n", t[i].buyerID);
+        printf("Seller ID: %s\n", t[i].sellerID);
+        printf("Total Amount: %.2lf\n", t[i].amount);
+        printf("\n**************************************\n\n");
+
+        continueNext(&i, n);
+    }
+
+    sleep(1);
+}
+
+
+/************************************************   
+    Shows the Top Selling Item and its total sales
+    @param - Transaction t[] - array of transactions
+    @param -  int n - number of transactions
+    @return N/A
+    Pre-condition: 
+************************************************/
+void 
+salesReport(Transaction t[], int n)
+{
+    int i, j, k, l;
+    int max_sales = 0;
+    int quantity;
+    string top_item;
+    int seen[MAX_TRANSACTIONS][5] = {0};
+
+    for (i = 0; i < n; i++) 
+    {
+        for (j = 0; j < t[i].nItems; j++) 
+        {
+        if (!seen[i][j]) 
+        {
+            quantity = t[i].checkout[j].quantity;
+            for (k = i+1; k < n; k++) 
+            {
+                for (l = 0; l < t[k].nItems; l++) 
+                    if (!seen[k][l] && strcmp(t[i].checkout[j].prodID, t[k].checkout[l].prodID) == 0) 
+                    {
+                        quantity += t[k].checkout[l].quantity;
+                        seen[k][l] = 1;
+                    }
+            }
+            if (quantity > max_sales) 
+            {
+                max_sales = quantity;
+                strcpy(top_item, t[i].checkout[j].item_name);
+            }
+            seen[i][j] = 1;
+        }
+        }
+    }
+
+    if (max_sales)
+    {
+        printf("\n====================================================================================\n");
+        printf("The Top Selling Item ever since is %s with total sales of %d.", top_item, max_sales);
+        printf("\n====================================================================================\n");
+    }
+    else
+        printf("\nThere is no history of transactions yet.\n");
+    
 }
 
 
@@ -102,9 +191,16 @@ adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans)
         printf("[3] Show Total Sales in Given Duration\n");
         printf("[4] Show Seller Sales\n");
         printf("[5] Show Shopaholics\n");
-        printf("[6] Back to Main Menu\n\n");
+        printf("[6] Show List of Transactions\n");
+        printf("[7] Show Sales Report\n");
+        printf("[8] Back to Main Menu\n\n");
         scanf("%d", &choice);
-        getchar();
+        fflush(stdin);
+
+        total_amount = 0;
+        flag = 0;
+        start.day = 0, start.month = 0, start.year = 0;
+        end.day = 0, end.month = 0, end.year = 0;
 
         switch(choice)
         {
@@ -128,8 +224,6 @@ adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans)
 
             // SHOW TOTAL SALES IN GIVEN DURATION
             case 3:
-                total_amount = 0;
-                flag = 0;
                 printf("\n(Start Date)");
                 getDate(&start.month, &start.day, &start.year);
 
@@ -172,8 +266,6 @@ adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans)
             
             // SHOW SELLERS SALES
             case 4:
-                total_amount = 0;
-                flag = 0;
                 printf("\n(Start Date)");
                 getDate(&start.month, &start.day, &start.year);
 
@@ -230,8 +322,6 @@ adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans)
 
             // SHOW SHOPAHOLICS
             case 5:
-                total_amount = 0;
-                flag = 0;
                 printf("\n(Start Date)");
                 getDate(&start.month, &start.day, &start.year);
 
@@ -287,9 +377,18 @@ adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans)
                 // edit quantity when checking out. need to check if quantity hits 0 so need to remove.
                 break;
 
+            // SHOW LIST OF TRANSACTION
+            case 6:
+                listTransactions(receipt, nTrans);
+                break;
+
+            // SALES REPORT
+            case 7:
+                salesReport(receipt, nTrans);
+                break;
 
             // BACK TO MAIN MENU
-            case 6:
+            case 8:
                 printf("\nExiting back to Main Menu...\n");
                 break;
 
@@ -297,5 +396,5 @@ adminMenu(User account[], int nUsers, Transaction receipt[], int nTrans)
                 printf("\nEnter a valid input.\n");
         }
 
-    } while (choice != 6);
+    } while (choice != 8);
 }

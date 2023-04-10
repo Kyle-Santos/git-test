@@ -2,7 +2,7 @@
 Keyboard 360
 Accessory
 This keyboard turns 360 degrees
-3 16000.00
+2 16000.00
 
 10 123
 Iphone 360
@@ -44,5 +44,5 @@ action camera
 Light Cable
 Accessory
 Charger
-9 999.00
+7 999.00
 

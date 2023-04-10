@@ -217,25 +217,36 @@ int findUser(User acc[], const int n, string id)
 void showItemsInTable(Item p[], int n)
 {
     int i;
-    printf("\nProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n\n");
+    printf("\nSeller ID\t|\tProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n");
+    printf("================================================================================================================================\n");
     for (i = 0; i < n; i++)
-        printf("%10s\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
+        printf("%9s\t\t%10s\t\t%-8s\t\t%-8s\t\t%10.2lf\t\t%8d\n\n", p[i].sellerID, p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
 }
 
 
 /******************************************************
-    print cart items in a table
-    @param - Item p[] - array of items
-    @param - int n - number of items in the array
+    Asks the user whether he wants to continue viewing or exit
+    @param - int *curr - is the current index in the array of something
+    @param - int max - is the maximum where *curr can reach
     @return N/A
-    Pre-condition: 
+    Pre-condition: *curr shouldn't be >= max
 ******************************************************/
-void showCartInTable(Item p[], int n)
+void continueNext(int *curr, int max)
 {
-    int i;
-    printf("\nSeller ID\t|\tProduct ID\t|\tItem Name\t|\tCategory\t|\tUnit Price\t|\tQuantity\n\n");
-    for (i = 0; i < n; i++)
-        printf("%9s\t\t%10s\t\t%8s\t\t%8s\t\t%10.2lf\t\t%8d\n\n", p[i].sellerID, p[i].prodID, p[i].item_name, p[i].category, p[i].price, p[i].quantity);
+    char t;
+
+    do
+    {
+        if (*curr != max - 1)
+        {
+            printf("Type [N] to see next or [X] to exit viewing: ");
+            scanf(" %c", &t);
+            fflush(stdin);
+        }
+        else t = 'X';
+
+        if (t == 'X') *curr = max;
+    } while (t != 'X' && t != 'N');
 }
 
 
@@ -249,7 +260,6 @@ void showCartInTable(Item p[], int n)
 void ViewProdBySellerID(User acc[], const int nUsers)
 {
     int i;
-    char t;
 
     for (i = 0; i < nUsers; i++)
         if (acc[i].nProduct != 0)
@@ -257,15 +267,7 @@ void ViewProdBySellerID(User acc[], const int nUsers)
             printf("\nSeller ID: %s\n", acc[i].userID);
             showItemsInTable(acc[i].products, acc[i].nProduct);
 
-            if (i != nUsers - 1)
-            {
-                printf("Type [N] to see next or [X] to exit viewing: ");
-                scanf("%c", &t);
-                getchar();
-            }
-
-            if (t != 'N') i = nUsers;
-        
+            continueNext(&i, nUsers);
         }
 }
 
@@ -281,7 +283,6 @@ void sellMenu(User *acc, int *numProduct)
 {
     Item *thing = NULL;
     int i, temp;
-    char t; // serves as a variable for user input
     int choice = 0, prod = 0, found = 0;
     string selectProd;
 
@@ -295,7 +296,7 @@ void sellMenu(User *acc, int *numProduct)
         printf("[5] Exit Sell Menu\n\n");
 
         scanf("%d", &choice);
-        getchar();
+        fflush(stdin);
 
         // switch for the choices on sell menu
         switch(choice)
@@ -444,16 +445,9 @@ void sellMenu(User *acc, int *numProduct)
                     if (thing->quantity < 5)
                     {
                         printf("\nProduct ID: %s\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
-                        
-                        if (i != *numProduct - 1)
-                        {
-                            printf("Type [N] to see next or [X] to exit viewing: ");
-                            scanf(" %c", &t);
-                            getchar();
-                        }
-                    }
 
-                    if (t != 'N') i = *numProduct;
+                        continueNext(&i, *numProduct);
+                    }
                 }
                 break;
 
@@ -491,7 +485,6 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
         available = 0,
         month, day, year;
     int *n; // int pointer for storing address of struct int elements. TO SHORTEN CALLING STRUCTS
-    char t;
     double total_amount = 0;
     string category, bin, id, search;
     Item *thing;
@@ -520,7 +513,9 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
         printf("[8] Exit Buy Menu\n\n");
 
         scanf("%d", &choice);
-        getchar();
+        fflush(stdin);
+
+        found = 0;
 
         switch (choice)
         {
@@ -536,22 +531,20 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                 scanf("%s", id);
                 getchar();
 
-                for (i = 0; i < nUsers; i++)
-                    if (strcmp(acc[i].userID, id) == 0)
-                    {
-                        if (acc[i].nProduct != 0)
-                            showItemsInTable(acc[i].products, acc[i].nProduct);
-                        else
-                            printf("\nSeller does not have any products being sold.\n");
-                        i = nUsers + 1;
-                    }
+                found = findUser(acc, nUsers, id);
 
-                if (i == nUsers)
+                if (found != -1)
                 {
-                    printf("\nSeller ID does not exist. You will be redirected back to the Buy Menu.\n");
-                    sleep(1);
+                    if (acc[found].nProduct != 0)
+                        showItemsInTable(acc[found].products, acc[found].nProduct);
+                    else
+                        printf("\nSeller does not have any products being sold.\n");
                 }
+                else
+                    printf("\nSeller ID does not exist.\n");
                     
+                printf("\nYou will be redirected back to the Buy Menu...\n");
+                sleep(1);  
                 break;
             
             // SEARCH PRODUCTS BY CATEGORY
@@ -561,26 +554,15 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
 
                 for (i = 0; i < nUsers; i++)
                 {
-                    if (acc[i].nProduct != 0)
-                    {
-                        for (j = 0; j < acc[i].nProduct; j++)
-                            if (strcmp(category, acc[i].products[j].category) == 0)
-                            {
-                                found = 1;
-                                thing = &acc[i].products[j]; // stores the address of the struct Item of the user in access
-                                printf("\nProduct ID: %s\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
-                                
-                                if (j != acc[i].nProduct - 1)
-                                {
-                                    printf("Type [N] to see next or [X] to exit viewing: ");
-                                    scanf(" %c", &t);
-                                    getchar();
-                                }
-
-                                if (t != 'N' && t != 'n') j = acc[i].nProduct;
-                            }
+                    for (j = 0; j < acc[i].nProduct; j++)
+                        if (strcmp(category, acc[i].products[j].category) == 0)
+                        {
+                            found = 1;
+                            thing = &acc[i].products[j]; // stores the address of the struct Item of the user in access
+                            printf("\nProduct ID: %s\nItem Name: %s\nCategory: %s\nDescription: %s\nUnit Price: %.2lf\nQuantity: %d\n\n", thing->prodID, thing->item_name, thing->category, thing->description, thing->price, thing->quantity);
                             
-                    }
+                            continueNext(&j, acc[i].nProduct);
+                        }
                 }
                     
                 if (!found)
@@ -590,12 +572,11 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                 }
                 break;
 
-            // SEARCH PRODUCTS BY NAME'
+            // SEARCH PRODUCTS BY NAME
             case 4:
                 printf("\nEnter the keyword you want to search for: ");
 			    scanf("%s", search);
-			
-			    found = 0;
+
 			    for(i = 0; i < nUsers; i++)
                 {
                     for (j = 0; j < acc[i].nProduct; j++) 
@@ -605,14 +586,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                             found = 1;
                             printf("\nProduct ID: %s\nItem Name: %s\nQuantity: %d\nPrice: %.2lf\n\n", acc[i].products[j].prodID, acc[i].products[j].item_name, acc[i].products[j].quantity,acc[i].products[j].price);
                             
-                            if (i != acc[i].nProduct - 1) 
-                            {
-                                printf("Type [N] to see next or [X] to exit viewing: ");
-                                scanf(" %c", &t);
-                                getchar();
-                            }
-                
-                            if (t != 'N' && t != 'n') j = acc[i].nProduct;
+                            continueNext(&i, acc[i].nProduct);
                         }
                     }
 		        }
@@ -655,7 +629,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                         for (i = 0; i < acc[accInd].inCart; i++)
                             if (strcmp(id, acc[accInd].cart[i].prodID) == 0)
                             {
-                                printf("\nError: You can't add to cart items that are already in your cart.\n");
+                                printf("\nError: You can't add to cart item that is already in your cart.\n");
                                 printf("\nYou will be redirected back to Buy Menu.\n");
                                 i = acc[accInd].inCart + 1;
                             }
@@ -795,6 +769,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
 
             // CHECK OUT MENU
             case 7:
+                available = 0;
                 choice = 0;
 
                 // check if cart of any product quantity is more than the stocks of the seller
@@ -845,8 +820,10 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
 
                                 printf("\nQuantity |\tProduct ID\t|\tItem Name\t|\tUnit Price\t|\tTotal\n\n");
 
+                                // loops through the cart
                                 for (i = 0; i < acc[accInd].inCart; i++)
                                 {   
+                                    // if id is not equal to current seller ID in cart
                                     if (strcmp(id, acc[accInd].cart[i].sellerID) != 0)
                                     {
                                         n = &out[*nTrans].nItems;
@@ -854,6 +831,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
 
                                         strcpy(id, acc[accInd].cart[i].sellerID);
 
+                                        // since everything is sorted we can continue indexing until seller ID is not equal to ID
                                         for (j = i; j < acc[accInd].inCart; j++)
                                         {
                                             thing = &acc[accInd].cart[j];
@@ -906,7 +884,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                                 {
                                     total_amount = 0;
                                     
-                                    showCartInTable(acc[accInd].cart, acc[accInd].inCart);
+                                    showItemsInTable(acc[accInd].cart, acc[accInd].inCart);
                                     printf("Input the seller ID of the seller: ");
                                     scanf("%s", id);
 
@@ -978,7 +956,7 @@ int buyMenu(User acc[], const int nUsers, int accInd, Transaction out[], int *nT
                                 {
                                     total_amount = 0;
                                     
-                                    showCartInTable(acc[accInd].cart, acc[accInd].inCart);
+                                    showItemsInTable(acc[accInd].cart, acc[accInd].inCart);
                                     printf("Input the Product ID of the item: ");
                                     scanf("%s", id);
 
@@ -1123,7 +1101,7 @@ void userMenu(User account[], int nUsers, Transaction checkout[], int *nTrans)
                     printf("[3] Exit User Menu\n\n");
 
                     scanf("%d", &choice);
-                    getchar();
+                    fflush(stdin);
                 } while (choice > 3 || choice < 1);
 
 
